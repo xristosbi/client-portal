@@ -2,7 +2,7 @@
 
 import { randomInt } from "crypto";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { isCurrentUserAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export interface CreateClientState {
@@ -39,29 +39,11 @@ function generateTempPassword(length = 14): string {
   return chars.join("");
 }
 
-async function requireAdmin(): Promise<boolean> {
-  const supabase = createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return false;
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  return profile?.role === "admin";
-}
-
 export async function createClientAccount(
   _prevState: CreateClientState,
   formData: FormData
 ): Promise<CreateClientState> {
-  if (!(await requireAdmin())) {
+  if (!(await isCurrentUserAdmin())) {
     return { status: "error", error: "Δεν έχετε δικαίωμα για αυτή την ενέργεια." };
   }
 

@@ -1,15 +1,5 @@
 import type { Metadata } from "next";
-import {
-  BarChart3,
-  CalendarDays,
-  CalendarRange,
-  Euro,
-  Infinity as InfinityIcon,
-  Repeat,
-  Sun,
-  TrendingUp,
-  Users,
-} from "lucide-react";
+import { Euro, Repeat, Users } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -17,37 +7,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { RevenueCard } from "@/components/admin/revenue-card";
 import { createClient } from "@/lib/supabase/server";
+import { computeRevenueTotals, currencyFormatter } from "@/lib/finance";
 
 export const metadata: Metadata = {
   title: "Επισκόπηση",
 };
 
-const currencyFormatter = new Intl.NumberFormat("el-GR", {
-  style: "currency",
-  currency: "EUR",
-  minimumFractionDigits: 0,
-});
-
-// Revenue periods — amounts stay at 0 until Stripe is wired up in a
-// later phase; the layout is ready to receive real numbers.
-const REVENUE_PERIODS = [
-  { label: "Σήμερα", icon: Sun, amount: 0 },
-  { label: "Εβδομάδα", icon: CalendarDays, amount: 0 },
-  { label: "Μήνας", icon: CalendarRange, amount: 0 },
-  { label: "Τρίμηνο", icon: TrendingUp, amount: 0 },
-  { label: "Έτος", icon: BarChart3, amount: 0 },
-  { label: "Σύνολο", icon: InfinityIcon, amount: 0 },
-];
-
 export default async function AdminDashboardPage() {
   const supabase = createClient();
 
-  const { count: clientCount } = await supabase
-    .from("profiles")
-    .select("*", { count: "exact", head: true })
-    .eq("role", "client");
+  const [{ count: clientCount }, { data: incomeEntries }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("role", "client"),
+    supabase.from("income_entries").select("amount, entry_date"),
+  ]);
+
+  const revenueTotals = computeRevenueTotals(incomeEntries ?? []);
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
@@ -60,7 +39,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Hero stats */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -96,38 +75,17 @@ export default async function AdminDashboardPage() {
             </p>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Revenue breakdown */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold">Έσοδα</h2>
-          <Badge variant="secondary">Σύνδεση με Stripe σε επόμενη φάση</Badge>
-        </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          {REVENUE_PERIODS.map((period) => (
-            <Card key={period.label}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <period.icon className="h-3.5 w-3.5" />
-                  <span className="text-xs font-medium">{period.label}</span>
-                </div>
-                <p className="mt-2 text-xl font-semibold">
-                  {currencyFormatter.format(period.amount)}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
+        <RevenueCard totals={revenueTotals} />
+      </div>
 
       {/* Chart placeholder */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Πορεία Εσόδων</CardTitle>
           <CardDescription>
-            Μηνιαία εξέλιξη εσόδων — θα ενεργοποιηθεί μόλις συνδεθούν οι
-            πληρωμές.
+            Μηνιαία εξέλιξη εσόδων — θα ενεργοποιηθεί μόλις υπάρχουν
+            αρκετές καταχωρήσεις.
           </CardDescription>
         </CardHeader>
         <CardContent>

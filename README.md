@@ -9,7 +9,18 @@ Storage) · Stripe · Tailwind CSS + shadcn/ui · Resend · Vercel
 
 All user-facing UI text is in **Greek**.
 
-## Phase 2 (current)
+## Phase 3 (current)
+
+- Επισκόπηση: single "Έσοδα" card with a period dropdown (Σήμερα /
+  Εβδομάδα / Μήνας / Τρίμηνο / Έτος / Σύνολο) fed by `income_entries`
+- Πληρωμές rebuilt as internal bookkeeping (myDATA records, not Stripe):
+  Έσοδα + Έξοδα manual entries, and Τιμολόγια Πελατών with PDF upload to
+  the private `client-invoices` storage bucket (signed URLs for viewing)
+- Migration `supabase/migrations/0003_finance.sql` adds
+  `income_entries`, `expense_entries`, `client_invoices`, the storage
+  bucket and admin-only RLS for all of them
+
+## Phase 2
 
 - Admin sidebar: Επισκόπηση, Πελάτες, Προσωπικό, Πληρωμές, Συνομιλίες
 - Overview redesigned as the stats dashboard (active clients, MRR and
