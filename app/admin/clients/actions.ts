@@ -4,6 +4,8 @@ import { randomInt } from "crypto";
 import { revalidatePath } from "next/cache";
 import { isCurrentUserAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+import type { PaymentMethod, SubscriptionStatus } from "@/lib/types";
 
 export interface CreateClientState {
   status: "idle" | "error" | "success";
@@ -39,6 +41,65 @@ function generateTempPassword(length = 14): string {
   return chars.join("");
 }
 
+interface SubscriptionFields {
+  has_subscription: boolean;
+  subscription_amount: number | null;
+  subscription_status: SubscriptionStatus;
+  payment_method: PaymentMethod | null;
+}
+
+const SUBSCRIPTION_STATUSES: SubscriptionStatus[] = [
+  "active",
+  "paused",
+  "cancelled",
+];
+const PAYMENT_METHODS: PaymentMethod[] = ["stripe_auto", "cash_manual"];
+
+function parseSubscriptionFields(
+  formData: FormData
+): { fields: SubscriptionFields } | { error: string } {
+  const hasSubscription = formData.get("has_subscription") === "on";
+
+  if (!hasSubscription) {
+    return {
+      fields: {
+        has_subscription: false,
+        subscription_amount: null,
+        subscription_status: "active",
+        payment_method: null,
+      },
+    };
+  }
+
+  const rawAmount = String(formData.get("subscription_amount") ?? "")
+    .trim()
+    .replace(",", ".");
+  const amount = Number(rawAmount);
+
+  if (!rawAmount || !Number.isFinite(amount) || amount <= 0) {
+    return { error: "Το ποσό συνδρομής δεν είναι έγκυρο." };
+  }
+
+  const method = String(formData.get("payment_method") ?? "");
+  if (!PAYMENT_METHODS.includes(method as PaymentMethod)) {
+    return { error: "Επιλέξτε τρόπο πληρωμής." };
+  }
+
+  const rawStatus = String(formData.get("subscription_status") ?? "active");
+  if (!SUBSCRIPTION_STATUSES.includes(rawStatus as SubscriptionStatus)) {
+    return { error: "Η κατάσταση συνδρομής δεν είναι έγκυρη." };
+  }
+
+  return {
+    fields: {
+      has_subscription: true,
+      subscription_amount: Math.round(amount * 100) / 100,
+      subscription_status: rawStatus as SubscriptionStatus,
+      payment_method: method as PaymentMethod,
+    },
+  };
+}
+
 export async function createClientAccount(
   _prevState: CreateClientState,
   formData: FormData
@@ -61,6 +122,11 @@ export async function createClientAccount(
 
   if (!EMAIL_RE.test(email)) {
     return { status: "error", error: "Το email δεν είναι έγκυρο." };
+  }
+
+  const parsedSubscription = parseSubscriptionFields(formData);
+  if ("error" in parsedSubscription) {
+    return { status: "error", error: parsedSubscription.error };
   }
 
   const admin = createAdminClient();
@@ -105,6 +171,7 @@ export async function createClientAccount(
     company_name: companyName || null,
     phone: phone || null,
     role: "client",
+    ...parsedSubscription.fields,
   });
 
   if (profileError) {
@@ -115,4 +182,53 @@ export async function createClientAccount(
   revalidatePath("/admin");
 
   return { status: "success", email, tempPassword };
+}
+
+export interface UpdateSubscriptionState {
+  status: "idle" | "error" | "success";
+  error?: string;
+}
+
+export async function updateClientSubscription(
+  _prevState: UpdateSubscriptionState,
+  formData: FormData
+): Promise<UpdateSubscriptionState> {
+  if (!(await isCurrentUserAdmin())) {
+    return {
+      status: "error",
+      error: "Δεν έχετε δικαίωμα για αυτή την ενέργεια.",
+    };
+  }
+
+  const clientId = String(formData.get("client_id") ?? "").trim();
+  if (!clientId) {
+    return { status: "error", error: "Ο πελάτης δε βρέθηκε." };
+  }
+
+  const parsed = parseSubscriptionFields(formData);
+  if ("error" in parsed) {
+    return { status: "error", error: parsed.error };
+  }
+
+  // RLS: only admins may update profiles, so the session client suffices.
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("profiles")
+    .update(parsed.fields)
+    .eq("id", clientId)
+    .eq("role", "client");
+
+  if (error) {
+    console.error("subscription update failed:", error);
+    return {
+      status: "error",
+      error: "Η ενημέρωση της συνδρομής απέτυχε. Δοκιμάστε ξανά.",
+    };
+  }
+
+  revalidatePath("/admin/clients");
+  revalidatePath("/admin");
+
+  return { status: "success" };
 }

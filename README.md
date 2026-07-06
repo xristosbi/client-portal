@@ -9,7 +9,19 @@ Storage) · Stripe · Tailwind CSS + shadcn/ui · Resend · Vercel
 
 All user-facing UI text is in **Greek**.
 
-## Phase 3 (current)
+## Phase 4 (current)
+
+- Subscription tracking on `profiles` (has_subscription, amount, status,
+  payment method — Stripe auto vs cash/manual, both entered manually for
+  now; Stripe webhook sync comes in a later phase)
+- Νέος Πελάτης form gets subscription fields; Πελάτες table gets a
+  Συνδρομή column and an Επεξεργασία dialog per client
+- MRR card on Επισκόπηση sums active subscriptions (both methods) with a
+  Stripe/Μετρητά breakdown
+- Έσοδα/Έξοδα amounts color-coded green/red with +/− indicators
+- Migration: `supabase/migrations/0004_subscriptions.sql`
+
+## Phase 3
 
 - Επισκόπηση: single "Έσοδα" card with a period dropdown (Σήμερα /
   Εβδομάδα / Μήνας / Τρίμηνο / Έτος / Σύνολο) fed by `income_entries`

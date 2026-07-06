@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ExternalLink } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -58,9 +58,11 @@ function formatDate(date: string) {
 function EntriesTable({
   entries,
   emptyMessage,
+  sentiment,
 }: {
   entries: FinanceEntry[];
   emptyMessage: string;
+  sentiment: "income" | "expense";
 }) {
   if (entries.length === 0) {
     return (
@@ -69,6 +71,11 @@ function EntriesTable({
       </p>
     );
   }
+
+  const AmountIcon = sentiment === "income" ? ArrowUpRight : ArrowDownRight;
+  const amountClass =
+    sentiment === "income" ? "text-emerald-600" : "text-red-600";
+  const amountSign = sentiment === "income" ? "+" : "−";
 
   return (
     <Table>
@@ -83,8 +90,14 @@ function EntriesTable({
       <TableBody>
         {entries.map((entry) => (
           <TableRow key={entry.id}>
-            <TableCell className="font-medium">
-              {currencyFormatter.format(Number(entry.amount))}
+            <TableCell>
+              <span
+                className={`inline-flex items-center gap-1 font-medium ${amountClass}`}
+              >
+                <AmountIcon className="h-3.5 w-3.5" />
+                {amountSign}
+                {currencyFormatter.format(Number(entry.amount))}
+              </span>
             </TableCell>
             <TableCell>{entry.description}</TableCell>
             <TableCell>
@@ -185,6 +198,7 @@ export default async function AdminPaymentsPage() {
             <EntriesTable
               entries={income}
               emptyMessage="Δεν υπάρχουν ακόμα καταχωρήσεις εσόδων"
+              sentiment="income"
             />
           </CardContent>
         </Card>
@@ -203,6 +217,7 @@ export default async function AdminPaymentsPage() {
             <EntriesTable
               entries={expenses}
               emptyMessage="Δεν υπάρχουν ακόμα καταχωρήσεις εξόδων"
+              sentiment="expense"
             />
           </CardContent>
         </Card>

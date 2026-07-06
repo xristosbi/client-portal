@@ -14,8 +14,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/server";
-import type { Profile } from "@/lib/types";
+import {
+  SUBSCRIPTION_STATUS_LABELS,
+  type Profile,
+} from "@/lib/types";
+import { EditClientDialog } from "./edit-client-dialog";
 import { NewClientDialog } from "./new-client-dialog";
 
 export const metadata: Metadata = {
@@ -27,6 +32,46 @@ const dateFormatter = new Intl.DateTimeFormat("el-GR", {
   month: "2-digit",
   year: "numeric",
 });
+
+const amountFormatter = new Intl.NumberFormat("el-GR", {
+  style: "currency",
+  currency: "EUR",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+
+const STATUS_CLASSES: Record<Profile["subscription_status"], string> = {
+  active: "text-emerald-600",
+  paused: "text-amber-600",
+  cancelled: "text-red-600",
+};
+
+function SubscriptionCell({ client }: { client: Profile }) {
+  if (!client.has_subscription || client.subscription_amount == null) {
+    return <span className="text-muted-foreground">—</span>;
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+      <span className="font-medium">
+        {amountFormatter.format(Number(client.subscription_amount))}/μήνα
+      </span>
+      <span className={STATUS_CLASSES[client.subscription_status]}>
+        {SUBSCRIPTION_STATUS_LABELS[client.subscription_status]}
+      </span>
+      {client.payment_method === "stripe_auto" && (
+        <Badge className="border-transparent bg-violet-100 text-violet-700 hover:bg-violet-100">
+          Stripe
+        </Badge>
+      )}
+      {client.payment_method === "cash_manual" && (
+        <Badge className="border-transparent bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+          Μετρητά
+        </Badge>
+      )}
+    </div>
+  );
+}
 
 export default async function AdminClientsPage() {
   const supabase = createClient();
@@ -73,7 +118,9 @@ export default async function AdminClientsPage() {
                   <TableHead>Επιχείρηση</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Τηλέφωνο</TableHead>
+                  <TableHead>Συνδρομή</TableHead>
                   <TableHead>Εγγραφή</TableHead>
+                  <TableHead className="text-right">Ενέργειες</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -86,7 +133,13 @@ export default async function AdminClientsPage() {
                     <TableCell>{client.email}</TableCell>
                     <TableCell>{client.phone || "—"}</TableCell>
                     <TableCell>
+                      <SubscriptionCell client={client} />
+                    </TableCell>
+                    <TableCell>
                       {dateFormatter.format(new Date(client.created_at))}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <EditClientDialog client={client} />
                     </TableCell>
                   </TableRow>
                 ))}

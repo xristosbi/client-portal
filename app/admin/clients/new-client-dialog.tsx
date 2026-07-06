@@ -19,6 +19,7 @@ import {
   createClientAccount,
   type CreateClientState,
 } from "./actions";
+import { SubscriptionFields } from "./subscription-fields";
 
 const initialState: CreateClientState = { status: "idle" };
 
@@ -113,6 +114,8 @@ function NewClientForm() {
         <Label htmlFor="phone">Τηλέφωνο</Label>
         <Input id="phone" name="phone" placeholder="+30 69..." />
       </div>
+
+      <SubscriptionFields idPrefix="new_client" />
 
       {state.status === "error" && state.error && (
         <p

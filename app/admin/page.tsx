@@ -18,15 +18,44 @@ export const metadata: Metadata = {
 export default async function AdminDashboardPage() {
   const supabase = createClient();
 
-  const [{ count: clientCount }, { data: incomeEntries }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("*", { count: "exact", head: true })
-      .eq("role", "client"),
-    supabase.from("income_entries").select("amount, entry_date"),
-  ]);
+  const [{ count: clientCount }, { data: incomeEntries }, { data: subs }] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("role", "client"),
+      supabase.from("income_entries").select("amount, entry_date"),
+      supabase
+        .from("profiles")
+        .select("subscription_amount, payment_method")
+        .eq("role", "client")
+        .eq("has_subscription", true)
+        .eq("subscription_status", "active"),
+    ]);
 
   const revenueTotals = computeRevenueTotals(incomeEntries ?? []);
+
+  let mrrStripe = 0;
+  let mrrCash = 0;
+  for (const sub of subs ?? []) {
+    const amount = Number(sub.subscription_amount ?? 0);
+    if (sub.payment_method === "stripe_auto") {
+      mrrStripe += amount;
+    } else {
+      mrrCash += amount;
+    }
+  }
+  const mrrTotal = mrrStripe + mrrCash;
+  const activeSubCount = subs?.length ?? 0;
+
+  let mrrSubtext = "Δεν υπάρχουν ακόμα συνδρομές";
+  if (mrrStripe > 0 && mrrCash > 0) {
+    mrrSubtext = `εκ των οποίων ${currencyFormatter.format(mrrStripe)} Stripe · ${currencyFormatter.format(mrrCash)} Μετρητά`;
+  } else if (activeSubCount === 1) {
+    mrrSubtext = "1 ενεργή συνδρομή";
+  } else if (activeSubCount > 1) {
+    mrrSubtext = `${activeSubCount} ενεργές συνδρομές`;
+  }
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
@@ -68,11 +97,9 @@ export default async function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-semibold">
-              {currencyFormatter.format(0)}
+              {currencyFormatter.format(mrrTotal)}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Δεν υπάρχουν ακόμα συνδρομές
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{mrrSubtext}</p>
           </CardContent>
         </Card>
 
