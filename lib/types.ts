@@ -15,6 +15,8 @@ export interface Profile {
   subscription_amount: number | null;
   subscription_status: SubscriptionStatus;
   payment_method: PaymentMethod | null;
+  /** Reserved for a future per-client personalized welcome video. */
+  personal_welcome_video_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -74,3 +76,10 @@ export const MILESTONE_STATUS_LABELS: Record<MilestoneStatus, string> = {
   in_progress: "Σε εξέλιξη",
   completed: "Ολοκληρώθηκε",
 };
+
+export interface AppSettings {
+  id: number;
+  welcome_video_url: string | null;
+  welcome_message: string | null;
+  updated_at: string;
+}

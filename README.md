@@ -9,7 +9,26 @@ Storage) · Stripe · Tailwind CSS + shadcn/ui · Resend · Vercel
 
 All user-facing UI text is in **Greek**.
 
-## Phase 5 (current)
+## Phase 6 (current)
+
+- `app_settings` singleton table (welcome_video_url, welcome_message);
+  `profiles.personal_welcome_video_url` reserved for a future per-client
+  video, not used yet
+- New admin page `/admin/settings` ("Ρυθμίσεις") to edit the global
+  welcome video URL and message
+- `/portal` home page rebuilt: welcome header, welcome video (personal
+  override → global fallback → nothing if neither set; supports
+  YouTube/Vimeo/Loom embeds and direct video files), welcome message,
+  project status + next-milestone card (unchanged), and a 2-card
+  quick-glance row (Επόμενη Πληρωμή from active subscription data,
+  Τελευταία Ειδοποίηση placeholder since notifications aren't built yet)
+- Migration: `supabase/migrations/0006_welcome_video.sql`
+- Note: `app_settings` RLS deviates slightly from "admin-only" as
+  specified — SELECT is open to any authenticated user (required so
+  clients can read the video/message on their own portal page), while
+  INSERT/UPDATE/DELETE remain admin-only
+
+## Phase 5
 
 - Edit + delete added across all remaining admin tables: Έσοδα, Έξοδα
   (edit dialog + confirm-delete), Πελάτες (delete blocked with a friendly

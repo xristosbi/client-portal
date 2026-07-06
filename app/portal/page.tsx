@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CalendarClock, Rocket } from "lucide-react";
+import { ArrowRight, Bell, CalendarClock, CreditCard, Rocket } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -13,9 +13,11 @@ import {
   MilestoneStatusBadge,
   ProjectStatusBadge,
 } from "@/components/shared/status-badges";
+import { WelcomeVideo } from "@/components/portal/welcome-video";
 import { getProfileOrRedirect } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { Milestone, Project } from "@/lib/types";
+import { currencyFormatter } from "@/lib/finance";
+import type { AppSettings, Milestone, Project } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Αρχική",
@@ -31,13 +33,17 @@ export default async function PortalHomePage() {
   const profile = await getProfileOrRedirect();
   const supabase = createClient();
 
-  const { data: projectData } = await supabase
-    .from("projects")
-    .select("*")
-    .eq("client_id", profile.id)
-    .maybeSingle();
+  const [{ data: projectData }, { data: settingsData }] = await Promise.all([
+    supabase
+      .from("projects")
+      .select("*")
+      .eq("client_id", profile.id)
+      .maybeSingle(),
+    supabase.from("app_settings").select("*").eq("id", 1).maybeSingle(),
+  ]);
 
   const project = projectData as Project | null;
+  const settings = settingsData as AppSettings | null;
 
   let nextMilestone: Milestone | null = null;
   if (project) {
@@ -53,6 +59,13 @@ export default async function PortalHomePage() {
   }
 
   const displayName = profile.full_name || profile.company_name || "";
+  const videoUrl =
+    profile.personal_welcome_video_url || settings?.welcome_video_url || null;
+
+  const hasActiveSubscription =
+    profile.has_subscription &&
+    profile.subscription_status === "active" &&
+    profile.subscription_amount != null;
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
@@ -64,6 +77,14 @@ export default async function PortalHomePage() {
           Αυτή είναι η προσωπική σας πύλη στην Imperial Automations.
         </p>
       </div>
+
+      {videoUrl && <WelcomeVideo url={videoUrl} />}
+
+      {settings?.welcome_message && (
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          {settings.welcome_message}
+        </p>
+      )}
 
       {project ? (
         <Card>
@@ -132,6 +153,56 @@ export default async function PortalHomePage() {
           </CardContent>
         </Card>
       )}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Επόμενη Πληρωμή
+            </CardTitle>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold/10">
+              <CreditCard className="h-4 w-4 text-gold" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            {hasActiveSubscription ? (
+              <>
+                <div className="text-2xl font-semibold">
+                  {currencyFormatter.format(
+                    Number(profile.subscription_amount)
+                  )}
+                  <span className="text-sm font-normal text-muted-foreground">
+                    /μήνα
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Ενεργή μηνιαία συνδρομή
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Καμία εκκρεμής πληρωμή
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Τελευταία Ειδοποίηση
+            </CardTitle>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold/10">
+              <Bell className="h-4 w-4 text-gold" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Καμία νέα ειδοποίηση
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
