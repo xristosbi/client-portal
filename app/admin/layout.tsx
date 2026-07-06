@@ -6,6 +6,9 @@ import type { NavItem } from "@/components/portal/sidebar-nav";
 const ADMIN_NAV: NavItem[] = [
   { href: "/admin", label: "Επισκόπηση", icon: "dashboard" },
   { href: "/admin/clients", label: "Πελάτες", icon: "users" },
+  { href: "/admin/team", label: "Προσωπικό", icon: "team" },
+  { href: "/admin/payments", label: "Πληρωμές", icon: "payments" },
+  { href: "/admin/chat", label: "Συνομιλίες", icon: "chat" },
 ];
 
 export default async function AdminLayout({

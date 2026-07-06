@@ -9,7 +9,21 @@ Storage) · Stripe · Tailwind CSS + shadcn/ui · Resend · Vercel
 
 All user-facing UI text is in **Greek**.
 
-## Phase 1 (current)
+## Phase 2 (current)
+
+- Admin sidebar: Επισκόπηση, Πελάτες, Προσωπικό, Πληρωμές, Συνομιλίες
+- Overview redesigned as the stats dashboard (active clients, MRR and
+  revenue-breakdown placeholders, chart empty state — Stripe fills these in
+  a later phase)
+- Manual client creation from the admin panel (service-role server action,
+  one-time visible temporary password)
+- `team_members` table + Προσωπικό page (informational entries, no login)
+- Payments page shell with empty state; Chat placeholder
+
+Requires `SUPABASE_SERVICE_ROLE_KEY` in the environment and the migration
+`supabase/migrations/0002_team_members.sql`.
+
+## Phase 1
 
 - Next.js 14 scaffold with Tailwind + shadcn/ui (dark "imperial" theme with
   gold accent)

@@ -15,12 +15,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { createClient } from "@/lib/supabase/server";
-import type { Profile } from "@/lib/types";
-import { NewClientDialog } from "./new-client-dialog";
+import { NewMemberDialog } from "./new-member-dialog";
 
 export const metadata: Metadata = {
-  title: "Πελάτες",
+  title: "Προσωπικό",
 };
+
+interface TeamMember {
+  id: string;
+  full_name: string;
+  email: string;
+  position: string | null;
+  created_at: string;
+}
 
 const dateFormatter = new Intl.DateTimeFormat("el-GR", {
   day: "2-digit",
@@ -28,65 +35,62 @@ const dateFormatter = new Intl.DateTimeFormat("el-GR", {
   year: "numeric",
 });
 
-export default async function AdminClientsPage() {
+export default async function AdminTeamPage() {
   const supabase = createClient();
 
   const { data } = await supabase
-    .from("profiles")
+    .from("team_members")
     .select("*")
-    .eq("role", "client")
     .order("created_at", { ascending: false });
 
-  const clients = (data ?? []) as Profile[];
+  const members = (data ?? []) as TeamMember[];
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Πελάτες</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Προσωπικό</h1>
           <p className="mt-1 text-muted-foreground">
-            Όλοι οι λογαριασμοί πελατών της πύλης.
+            Τα μέλη και οι συνεργάτες της ομάδας σας.
           </p>
         </div>
-        <NewClientDialog />
+        <NewMemberDialog />
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            Λίστα Πελατών ({clients.length})
+            Μέλη Ομάδας ({members.length})
           </CardTitle>
           <CardDescription>
-            Δημιουργήστε νέους λογαριασμούς με το κουμπί «Νέος Πελάτης».
+            Καταχωρήσεις για εσωτερική ενημέρωση — χωρίς πρόσβαση στην πύλη.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {clients.length === 0 ? (
+          {members.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Δεν υπάρχουν ακόμη πελάτες.
+              Δεν υπάρχουν ακόμη μέλη ομάδας.
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Ονοματεπώνυμο</TableHead>
-                  <TableHead>Επιχείρηση</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Τηλέφωνο</TableHead>
-                  <TableHead>Εγγραφή</TableHead>
+                  <TableHead>Ρόλος / Θέση</TableHead>
+                  <TableHead>Προστέθηκε</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {clients.map((client) => (
-                  <TableRow key={client.id}>
+                {members.map((member) => (
+                  <TableRow key={member.id}>
                     <TableCell className="font-medium">
-                      {client.full_name || "—"}
+                      {member.full_name}
                     </TableCell>
-                    <TableCell>{client.company_name || "—"}</TableCell>
-                    <TableCell>{client.email}</TableCell>
-                    <TableCell>{client.phone || "—"}</TableCell>
+                    <TableCell>{member.email}</TableCell>
+                    <TableCell>{member.position || "—"}</TableCell>
                     <TableCell>
-                      {dateFormatter.format(new Date(client.created_at))}
+                      {dateFormatter.format(new Date(member.created_at))}
                     </TableCell>
                   </TableRow>
                 ))}

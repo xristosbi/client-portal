@@ -2,12 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, type LucideIcon } from "lucide-react";
+import {
+  CreditCard,
+  LayoutDashboard,
+  MessagesSquare,
+  UserCog,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ICONS: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
   users: Users,
+  team: UserCog,
+  payments: CreditCard,
+  chat: MessagesSquare,
 };
 
 export interface NavItem {
@@ -19,12 +29,20 @@ export interface NavItem {
 export function SidebarNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
 
+  // Highlight only the most specific matching item, so e.g. /admin does not
+  // stay active while visiting /admin/clients.
+  const activeHref = items
+    .filter(
+      (item) =>
+        pathname === item.href || pathname.startsWith(`${item.href}/`)
+    )
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
+
   return (
     <nav className="flex flex-col gap-1">
       {items.map((item) => {
         const Icon = ICONS[item.icon];
-        const isActive =
-          pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const isActive = item.href === activeHref;
 
         return (
           <Link
