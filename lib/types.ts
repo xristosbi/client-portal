@@ -29,3 +29,48 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   stripe_auto: "Stripe (αυτόματο)",
   cash_manual: "Μετρητά / Χειροκίνητο",
 };
+
+export type ProjectStatus =
+  | "onboarding"
+  | "in_progress"
+  | "review"
+  | "completed"
+  | "paused";
+
+export type MilestoneStatus = "pending" | "in_progress" | "completed";
+
+export interface Project {
+  id: string;
+  client_id: string;
+  name: string;
+  description: string | null;
+  status: ProjectStatus;
+  start_date: string | null;
+  target_end_date: string | null;
+  created_at: string;
+}
+
+export interface Milestone {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  due_date: string | null;
+  status: MilestoneStatus;
+  sort_order: number;
+  created_at: string;
+}
+
+export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
+  onboarding: "Έναρξη συνεργασίας",
+  in_progress: "Σε εξέλιξη",
+  review: "Σε αξιολόγηση",
+  completed: "Ολοκληρωμένο",
+  paused: "Σε παύση",
+};
+
+export const MILESTONE_STATUS_LABELS: Record<MilestoneStatus, string> = {
+  pending: "Σε αναμονή",
+  in_progress: "Σε εξέλιξη",
+  completed: "Ολοκληρώθηκε",
+};

@@ -19,7 +19,7 @@ export default async function AdminLayout({
   const profile = await getProfileOrRedirect();
 
   if (profile.role !== "admin") {
-    redirect("/dashboard");
+    redirect("/portal");
   }
 
   return (

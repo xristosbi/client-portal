@@ -9,7 +9,31 @@ Storage) · Stripe · Tailwind CSS + shadcn/ui · Resend · Vercel
 
 All user-facing UI text is in **Greek**.
 
-## Phase 4 (current)
+## Phase 5 (current)
+
+- Edit + delete added across all remaining admin tables: Έσοδα, Έξοδα
+  (edit dialog + confirm-delete), Πελάτες (delete blocked with a friendly
+  message if the client has invoices — `client_invoices` is
+  `ON DELETE RESTRICT`; otherwise removes both the profile and the auth
+  user), Προσωπικό (edit + delete). One shared `ConfirmDeleteDialog`
+  powers every delete confirmation.
+- `projects` + `milestones` tables with RLS (admin full access, clients
+  read only their own project's rows)
+- New admin page `/admin/clients/[id]`: create/edit a client's project,
+  manage milestones (add/edit/delete/reorder with up-down buttons), and
+  a read-only view of that client's invoices
+- Client portal restructured under `/portal` (replacing `/dashboard`):
+  - `/portal` — welcome, project status + next-milestone preview, or an
+    empty state if no project yet
+  - `/portal/project` — real project details + vertical milestone
+    timeline
+  - `/portal/invoices` — the client's own `client_invoices` rows only
+    (RLS-enforced), with 1-hour signed PDF links
+  - `/portal/files`, `/portal/agreement`, `/portal/notifications`,
+    `/portal/support` — still "Σύντομα διαθέσιμο" placeholders
+- Migration: `supabase/migrations/0005_projects.sql`
+
+## Phase 4
 
 - Subscription tracking on `profiles` (has_subscription, amount, status,
   payment method — Stripe auto vs cash/manual, both entered manually for

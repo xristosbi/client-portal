@@ -16,9 +16,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
 import { createClient } from "@/lib/supabase/server";
 import { currencyFormatter } from "@/lib/finance";
-import { EntryDialog } from "./entry-dialog";
+import { deleteExpenseEntry, deleteIncomeEntry } from "./actions";
+import { EditEntryDialog, EntryDialog } from "./entry-dialog";
 import { NewInvoiceDialog, type ClientOption } from "./new-invoice-dialog";
 
 export const metadata: Metadata = {
@@ -76,6 +78,8 @@ function EntriesTable({
   const amountClass =
     sentiment === "income" ? "text-emerald-600" : "text-red-600";
   const amountSign = sentiment === "income" ? "+" : "−";
+  const deleteAction =
+    sentiment === "income" ? deleteIncomeEntry : deleteExpenseEntry;
 
   return (
     <Table>
@@ -85,6 +89,7 @@ function EntriesTable({
           <TableHead>Περιγραφή</TableHead>
           <TableHead>Κατηγορία</TableHead>
           <TableHead>Ημερομηνία</TableHead>
+          <TableHead className="text-right">Ενέργειες</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -108,6 +113,24 @@ function EntriesTable({
               )}
             </TableCell>
             <TableCell>{formatDate(entry.entry_date)}</TableCell>
+            <TableCell>
+              <div className="flex items-center justify-end gap-1">
+                <EditEntryDialog
+                  variant={sentiment}
+                  entry={{
+                    id: entry.id,
+                    amount: Number(entry.amount),
+                    description: entry.description,
+                    category: entry.category,
+                    entry_date: entry.entry_date,
+                  }}
+                />
+                <ConfirmDeleteDialog
+                  action={deleteAction.bind(null, entry.id)}
+                  description="Σίγουρα θες να διαγράψεις αυτή την καταχώρηση;"
+                />
+              </div>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

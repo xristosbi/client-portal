@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,10 +18,20 @@ import { Label } from "@/components/ui/label";
 import {
   createExpenseEntry,
   createIncomeEntry,
+  updateExpenseEntry,
+  updateIncomeEntry,
   type FinanceFormState,
 } from "./actions";
 
 type EntryVariant = "income" | "expense";
+
+export interface EditableEntry {
+  id: string;
+  amount: number;
+  description: string;
+  category: string | null;
+  entry_date: string;
+}
 
 const VARIANT_COPY: Record<
   EntryVariant,
@@ -52,18 +62,19 @@ function localToday(): string {
   return new Date().toLocaleDateString("en-CA");
 }
 
-function SubmitButton() {
+function SubmitButton({ isEdit }: { isEdit: boolean }) {
   const { pending } = useFormStatus();
+  const label = isEdit ? "Αποθήκευση" : "Καταχώρηση";
 
   return (
     <Button type="submit" className="w-full" disabled={pending}>
       {pending ? (
         <>
           <Loader2 className="animate-spin" />
-          Καταχώρηση…
+          {label}…
         </>
       ) : (
-        "Καταχώρηση"
+        label
       )}
     </Button>
   );
@@ -71,25 +82,36 @@ function SubmitButton() {
 
 function EntryForm({
   variant,
+  entry,
   onSuccess,
 }: {
   variant: EntryVariant;
+  entry?: EditableEntry;
   onSuccess: () => void;
 }) {
-  const action =
-    variant === "income" ? createIncomeEntry : createExpenseEntry;
+  const action = entry
+    ? variant === "income"
+      ? updateIncomeEntry
+      : updateExpenseEntry
+    : variant === "income"
+      ? createIncomeEntry
+      : createExpenseEntry;
   const [state, formAction] = useFormState(action, initialState);
   const copy = VARIANT_COPY[variant];
+  const successMessage = entry
+    ? "Η καταχώρηση ενημερώθηκε."
+    : copy.successMessage;
 
   useEffect(() => {
     if (state.status === "success") {
-      toast.success(copy.successMessage);
+      toast.success(successMessage);
       onSuccess();
     }
-  }, [state.status, copy.successMessage, onSuccess]);
+  }, [state.status, successMessage, onSuccess]);
 
   return (
     <form action={formAction} className="space-y-4">
+      {entry && <input type="hidden" name="entry_id" value={entry.id} />}
       <div className="space-y-2">
         <Label htmlFor={`${variant}_amount`}>Ποσό (€) *</Label>
         <Input
@@ -100,6 +122,7 @@ function EntryForm({
           step="0.01"
           min="0"
           placeholder="0,00"
+          defaultValue={entry?.amount ?? undefined}
           required
         />
       </div>
@@ -109,6 +132,7 @@ function EntryForm({
           id={`${variant}_description`}
           name="description"
           placeholder="Σύντομη περιγραφή"
+          defaultValue={entry?.description ?? undefined}
           required
         />
       </div>
@@ -118,6 +142,7 @@ function EntryForm({
           id={`${variant}_category`}
           name="category"
           placeholder={copy.categoryPlaceholder}
+          defaultValue={entry?.category ?? undefined}
         />
       </div>
       <div className="space-y-2">
@@ -126,7 +151,7 @@ function EntryForm({
           id={`${variant}_entry_date`}
           name="entry_date"
           type="date"
-          defaultValue={localToday()}
+          defaultValue={entry?.entry_date ?? localToday()}
           required
         />
       </div>
@@ -140,8 +165,49 @@ function EntryForm({
         </p>
       )}
 
-      <SubmitButton />
+      <SubmitButton isEdit={Boolean(entry)} />
     </form>
+  );
+}
+
+export function EditEntryDialog({
+  variant,
+  entry,
+}: {
+  variant: EntryVariant;
+  entry: EditableEntry;
+}) {
+  const [open, setOpen] = useState(false);
+  const [formKey, setFormKey] = useState(0);
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (next) setFormKey((key) => key + 1);
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label="Επεξεργασία">
+          <Pencil />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Επεξεργασία Καταχώρησης</DialogTitle>
+          <DialogDescription>
+            Ενημερώστε τα στοιχεία της καταχώρησης.
+          </DialogDescription>
+        </DialogHeader>
+        <EntryForm
+          key={formKey}
+          variant={variant}
+          entry={entry}
+          onSuccess={() => setOpen(false)}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }
 

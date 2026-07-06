@@ -232,3 +232,43 @@ export async function updateClientSubscription(
 
   return { status: "success" };
 }
+
+export async function deleteClientAccount(
+  clientId: string
+): Promise<{ error?: string }> {
+  if (!(await isCurrentUserAdmin())) {
+    return { error: "Δεν έχετε δικαίωμα για αυτή την ενέργεια." };
+  }
+
+  const admin = createAdminClient();
+
+  // client_invoices is ON DELETE RESTRICT — check first for a clear message.
+  const { count: invoiceCount } = await admin
+    .from("client_invoices")
+    .select("*", { count: "exact", head: true })
+    .eq("client_id", clientId);
+
+  if (invoiceCount && invoiceCount > 0) {
+    return {
+      error: "Δεν μπορείς να διαγράψεις πελάτη με καταχωρημένα τιμολόγια.",
+    };
+  }
+
+  // Deleting the auth user cascades to the profile (and its project).
+  const { error } = await admin.auth.admin.deleteUser(clientId);
+
+  if (error) {
+    console.error("client delete failed:", error);
+    if (error.message?.includes("client_invoices")) {
+      return {
+        error: "Δεν μπορείς να διαγράψεις πελάτη με καταχωρημένα τιμολόγια.",
+      };
+    }
+    return { error: "Η διαγραφή του πελάτη απέτυχε. Δοκιμάστε ξανά." };
+  }
+
+  revalidatePath("/admin/clients");
+  revalidatePath("/admin");
+
+  return {};
+}

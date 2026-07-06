@@ -105,6 +105,102 @@ export async function createExpenseEntry(
   return insertEntry("expense_entries", formData);
 }
 
+async function updateEntry(
+  table: "income_entries" | "expense_entries",
+  formData: FormData
+): Promise<FinanceFormState> {
+  if (!(await isCurrentUserAdmin())) {
+    return {
+      status: "error",
+      error: "Δεν έχετε δικαίωμα για αυτή την ενέργεια.",
+    };
+  }
+
+  const entryId = String(formData.get("entry_id") ?? "").trim();
+  if (!entryId) {
+    return { status: "error", error: "Η καταχώρηση δε βρέθηκε." };
+  }
+
+  const parsed = parseEntryFields(formData);
+  if ("error" in parsed) {
+    return { status: "error", error: parsed.error };
+  }
+
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from(table)
+    .update({
+      amount: parsed.fields.amount,
+      description: parsed.fields.description,
+      category: parsed.fields.category,
+      entry_date: parsed.fields.entryDate,
+    })
+    .eq("id", entryId);
+
+  if (error) {
+    console.error(`${table} update failed:`, error);
+    return {
+      status: "error",
+      error: "Η ενημέρωση απέτυχε. Δοκιμάστε ξανά.",
+    };
+  }
+
+  revalidatePath("/admin/payments");
+  revalidatePath("/admin");
+
+  return { status: "success" };
+}
+
+export async function updateIncomeEntry(
+  _prevState: FinanceFormState,
+  formData: FormData
+): Promise<FinanceFormState> {
+  return updateEntry("income_entries", formData);
+}
+
+export async function updateExpenseEntry(
+  _prevState: FinanceFormState,
+  formData: FormData
+): Promise<FinanceFormState> {
+  return updateEntry("expense_entries", formData);
+}
+
+async function deleteEntry(
+  table: "income_entries" | "expense_entries",
+  entryId: string
+): Promise<{ error?: string }> {
+  if (!(await isCurrentUserAdmin())) {
+    return { error: "Δεν έχετε δικαίωμα για αυτή την ενέργεια." };
+  }
+
+  const supabase = createClient();
+
+  const { error } = await supabase.from(table).delete().eq("id", entryId);
+
+  if (error) {
+    console.error(`${table} delete failed:`, error);
+    return { error: "Η διαγραφή απέτυχε. Δοκιμάστε ξανά." };
+  }
+
+  revalidatePath("/admin/payments");
+  revalidatePath("/admin");
+
+  return {};
+}
+
+export async function deleteIncomeEntry(
+  entryId: string
+): Promise<{ error?: string }> {
+  return deleteEntry("income_entries", entryId);
+}
+
+export async function deleteExpenseEntry(
+  entryId: string
+): Promise<{ error?: string }> {
+  return deleteEntry("expense_entries", entryId);
+}
+
 export async function createClientInvoice(
   _prevState: FinanceFormState,
   formData: FormData

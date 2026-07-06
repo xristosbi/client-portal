@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { Loader2, UserPlus } from "lucide-react";
+import { Loader2, Pencil, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,46 +17,67 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   createTeamMember,
+  updateTeamMember,
   type CreateTeamMemberState,
 } from "./actions";
 
+export interface EditableMember {
+  id: string;
+  full_name: string;
+  email: string;
+  position: string | null;
+}
+
 const initialState: CreateTeamMemberState = { status: "idle" };
 
-function SubmitButton() {
+function SubmitButton({ isEdit }: { isEdit: boolean }) {
   const { pending } = useFormStatus();
+  const label = isEdit ? "Αποθήκευση" : "Προσθήκη Μέλους";
 
   return (
     <Button type="submit" className="w-full" disabled={pending}>
       {pending ? (
         <>
           <Loader2 className="animate-spin" />
-          Προσθήκη…
+          {isEdit ? "Αποθήκευση…" : "Προσθήκη…"}
         </>
       ) : (
-        "Προσθήκη Μέλους"
+        label
       )}
     </Button>
   );
 }
 
-function NewMemberForm({ onSuccess }: { onSuccess: () => void }) {
-  const [state, formAction] = useFormState(createTeamMember, initialState);
+function MemberForm({
+  member,
+  onSuccess,
+}: {
+  member?: EditableMember;
+  onSuccess: () => void;
+}) {
+  const action = member ? updateTeamMember : createTeamMember;
+  const [state, formAction] = useFormState(action, initialState);
+  const successMessage = member
+    ? "Το μέλος ενημερώθηκε."
+    : "Το μέλος προστέθηκε.";
 
   useEffect(() => {
     if (state.status === "success") {
-      toast.success("Το μέλος προστέθηκε.");
+      toast.success(successMessage);
       onSuccess();
     }
-  }, [state.status, onSuccess]);
+  }, [state.status, successMessage, onSuccess]);
 
   return (
     <form action={formAction} className="space-y-4">
+      {member && <input type="hidden" name="member_id" value={member.id} />}
       <div className="space-y-2">
         <Label htmlFor="member_full_name">Όνομα *</Label>
         <Input
           id="member_full_name"
           name="full_name"
           placeholder="π.χ. Γιώργος Νικολάου"
+          defaultValue={member?.full_name ?? undefined}
           required
         />
       </div>
@@ -67,6 +88,7 @@ function NewMemberForm({ onSuccess }: { onSuccess: () => void }) {
           name="email"
           type="email"
           placeholder="member@example.com"
+          defaultValue={member?.email ?? undefined}
           required
         />
       </div>
@@ -76,6 +98,7 @@ function NewMemberForm({ onSuccess }: { onSuccess: () => void }) {
           id="member_position"
           name="position"
           placeholder="π.χ. Marketing, Developer"
+          defaultValue={member?.position ?? undefined}
         />
       </div>
 
@@ -88,8 +111,40 @@ function NewMemberForm({ onSuccess }: { onSuccess: () => void }) {
         </p>
       )}
 
-      <SubmitButton />
+      <SubmitButton isEdit={Boolean(member)} />
     </form>
+  );
+}
+
+export function EditMemberDialog({ member }: { member: EditableMember }) {
+  const [open, setOpen] = useState(false);
+  const [formKey, setFormKey] = useState(0);
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (next) setFormKey((key) => key + 1);
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label="Επεξεργασία">
+          <Pencil />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Επεξεργασία Μέλους</DialogTitle>
+          <DialogDescription>{member.full_name}</DialogDescription>
+        </DialogHeader>
+        <MemberForm
+          key={formKey}
+          member={member}
+          onSuccess={() => setOpen(false)}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -119,7 +174,7 @@ export function NewMemberDialog() {
             ενημέρωση, χωρίς πρόσβαση στην πύλη.
           </DialogDescription>
         </DialogHeader>
-        <NewMemberForm key={formKey} onSuccess={() => setOpen(false)} />
+        <MemberForm key={formKey} onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );

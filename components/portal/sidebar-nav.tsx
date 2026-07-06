@@ -3,9 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Bell,
   CreditCard,
+  FileSignature,
+  FolderKanban,
+  FolderOpen,
+  Home,
   LayoutDashboard,
+  LifeBuoy,
   MessagesSquare,
+  Receipt,
   UserCog,
   Users,
   type LucideIcon,
@@ -18,6 +25,13 @@ const ICONS: Record<string, LucideIcon> = {
   team: UserCog,
   payments: CreditCard,
   chat: MessagesSquare,
+  home: Home,
+  project: FolderKanban,
+  invoices: Receipt,
+  files: FolderOpen,
+  agreement: FileSignature,
+  notifications: Bell,
+  support: LifeBuoy,
 };
 
 export interface NavItem {

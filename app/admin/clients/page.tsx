@@ -14,12 +14,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Link from "next/link";
+import { FolderKanban } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
 import { createClient } from "@/lib/supabase/server";
 import {
   SUBSCRIPTION_STATUS_LABELS,
   type Profile,
 } from "@/lib/types";
+import { deleteClientAccount } from "./actions";
 import { EditClientDialog } from "./edit-client-dialog";
 import { NewClientDialog } from "./new-client-dialog";
 
@@ -139,7 +144,19 @@ export default async function AdminClientsPage() {
                       {dateFormatter.format(new Date(client.created_at))}
                     </TableCell>
                     <TableCell className="text-right">
-                      <EditClientDialog client={client} />
+                      <div className="flex items-center justify-end gap-1">
+                        <Button asChild variant="ghost" size="sm">
+                          <Link href={`/admin/clients/${client.id}`}>
+                            <FolderKanban />
+                            Project
+                          </Link>
+                        </Button>
+                        <EditClientDialog client={client} />
+                        <ConfirmDeleteDialog
+                          action={deleteClientAccount.bind(null, client.id)}
+                          description={`Σίγουρα θες να διαγράψεις τον πελάτη «${client.full_name || client.email}»; Θα διαγραφεί και το project του. Τα τιμολόγιά του (αν υπάρχουν) εμποδίζουν τη διαγραφή.`}
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

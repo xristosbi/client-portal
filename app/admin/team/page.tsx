@@ -14,8 +14,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
 import { createClient } from "@/lib/supabase/server";
-import { NewMemberDialog } from "./new-member-dialog";
+import { deleteTeamMember } from "./actions";
+import { EditMemberDialog, NewMemberDialog } from "./new-member-dialog";
 
 export const metadata: Metadata = {
   title: "Προσωπικό",
@@ -79,6 +81,7 @@ export default async function AdminTeamPage() {
                   <TableHead>Email</TableHead>
                   <TableHead>Ρόλος / Θέση</TableHead>
                   <TableHead>Προστέθηκε</TableHead>
+                  <TableHead className="text-right">Ενέργειες</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -91,6 +94,15 @@ export default async function AdminTeamPage() {
                     <TableCell>{member.position || "—"}</TableCell>
                     <TableCell>
                       {dateFormatter.format(new Date(member.created_at))}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-1">
+                        <EditMemberDialog member={member} />
+                        <ConfirmDeleteDialog
+                          action={deleteTeamMember.bind(null, member.id)}
+                          description={`Σίγουρα θες να διαγράψεις το μέλος «${member.full_name}»;`}
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -51,3 +51,69 @@ export async function createTeamMember(
 
   return { status: "success" };
 }
+
+export async function updateTeamMember(
+  _prevState: CreateTeamMemberState,
+  formData: FormData
+): Promise<CreateTeamMemberState> {
+  const memberId = String(formData.get("member_id") ?? "").trim();
+  const fullName = String(formData.get("full_name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const position = String(formData.get("position") ?? "").trim();
+
+  if (!memberId) {
+    return { status: "error", error: "Το μέλος δε βρέθηκε." };
+  }
+  if (!fullName || !email) {
+    return {
+      status: "error",
+      error: "Το όνομα και το email είναι υποχρεωτικά.",
+    };
+  }
+  if (!EMAIL_RE.test(email)) {
+    return { status: "error", error: "Το email δεν είναι έγκυρο." };
+  }
+
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("team_members")
+    .update({
+      full_name: fullName,
+      email,
+      position: position || null,
+    })
+    .eq("id", memberId);
+
+  if (error) {
+    console.error("team member update failed:", error);
+    return {
+      status: "error",
+      error: "Η ενημέρωση του μέλους απέτυχε. Δοκιμάστε ξανά.",
+    };
+  }
+
+  revalidatePath("/admin/team");
+
+  return { status: "success" };
+}
+
+export async function deleteTeamMember(
+  memberId: string
+): Promise<{ error?: string }> {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("team_members")
+    .delete()
+    .eq("id", memberId);
+
+  if (error) {
+    console.error("team member delete failed:", error);
+    return { error: "Η διαγραφή απέτυχε. Δοκιμάστε ξανά." };
+  }
+
+  revalidatePath("/admin/team");
+
+  return {};
+}
