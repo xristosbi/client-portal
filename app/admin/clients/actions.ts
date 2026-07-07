@@ -46,6 +46,7 @@ interface SubscriptionFields {
   subscription_amount: number | null;
   subscription_status: SubscriptionStatus;
   payment_method: PaymentMethod | null;
+  subscription_billing_day: number | null;
 }
 
 const SUBSCRIPTION_STATUSES: SubscriptionStatus[] = [
@@ -67,6 +68,7 @@ function parseSubscriptionFields(
         subscription_amount: null,
         subscription_status: "active",
         payment_method: null,
+        subscription_billing_day: null,
       },
     };
   }
@@ -90,12 +92,29 @@ function parseSubscriptionFields(
     return { error: "Η κατάσταση συνδρομής δεν είναι έγκυρη." };
   }
 
+  const rawBillingDay = String(
+    formData.get("subscription_billing_day") ?? ""
+  ).trim();
+  let billingDay: number | null = null;
+  if (rawBillingDay) {
+    const parsedDay = Number(rawBillingDay);
+    if (
+      !Number.isInteger(parsedDay) ||
+      parsedDay < 1 ||
+      parsedDay > 31
+    ) {
+      return { error: "Η ημέρα χρέωσης πρέπει να είναι από 1 έως 31." };
+    }
+    billingDay = parsedDay;
+  }
+
   return {
     fields: {
       has_subscription: true,
       subscription_amount: Math.round(amount * 100) / 100,
       subscription_status: rawStatus as SubscriptionStatus,
       payment_method: method as PaymentMethod,
+      subscription_billing_day: billingDay,
     },
   };
 }

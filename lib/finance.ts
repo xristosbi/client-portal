@@ -65,6 +65,32 @@ export function periodStart(
   }
 }
 
+function daysInMonth(year: number, month1based: number): number {
+  return new Date(Date.UTC(year, month1based, 0)).getUTCDate();
+}
+
+function formatYmd(year: number, month1based: number, day: number): string {
+  return `${year}-${String(month1based).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+/**
+ * Next occurrence (YYYY-MM-DD) of `billingDay` on/after `today`. Clamps to
+ * the last day of short months (e.g. billingDay=31 in April → April 30).
+ */
+export function nextBillingDate(billingDay: number, today: string): string {
+  const [year, month, day] = today.split("-").map(Number);
+
+  const thisMonthDay = Math.min(billingDay, daysInMonth(year, month));
+  if (thisMonthDay >= day) {
+    return formatYmd(year, month, thisMonthDay);
+  }
+
+  const nextMonth = month === 12 ? 1 : month + 1;
+  const nextMonthYear = month === 12 ? year + 1 : year;
+  const nextMonthDay = Math.min(billingDay, daysInMonth(nextMonthYear, nextMonth));
+  return formatYmd(nextMonthYear, nextMonth, nextMonthDay);
+}
+
 /** Sums (amount, entry_date) rows into totals per period. */
 export function computeRevenueTotals(
   entries: { amount: number; entry_date: string }[]

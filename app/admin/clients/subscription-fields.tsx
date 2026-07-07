@@ -24,6 +24,7 @@ interface SubscriptionFieldsProps {
   defaultAmount?: number | null;
   defaultStatus?: SubscriptionStatus;
   defaultMethod?: PaymentMethod | null;
+  defaultBillingDay?: number | null;
   /** The create form hides the status select (new subscriptions are active). */
   showStatus?: boolean;
 }
@@ -34,6 +35,7 @@ export function SubscriptionFields({
   defaultAmount = null,
   defaultStatus = "active",
   defaultMethod = null,
+  defaultBillingDay = null,
   showStatus = false,
 }: SubscriptionFieldsProps) {
   const [hasSubscription, setHasSubscription] = useState(defaultChecked);
@@ -68,6 +70,23 @@ export function SubscriptionFields({
               placeholder="π.χ. 150"
               defaultValue={defaultAmount ?? undefined}
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor={`${idPrefix}_subscription_billing_day`}>
+              Ημέρα χρέωσης του μήνα
+            </Label>
+            <Input
+              id={`${idPrefix}_subscription_billing_day`}
+              name="subscription_billing_day"
+              type="number"
+              inputMode="numeric"
+              step="1"
+              min="1"
+              max="31"
+              placeholder="π.χ. 15"
+              defaultValue={defaultBillingDay ?? undefined}
             />
           </div>
 

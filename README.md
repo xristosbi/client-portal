@@ -9,7 +9,19 @@ Storage) · Stripe · Tailwind CSS + shadcn/ui · Resend · Vercel
 
 All user-facing UI text is in **Greek**.
 
-## Phase 6 (current)
+## Phase 7 (current)
+
+- Removed the redundant `welcome_message` display on `/portal` (header
+  already covers it); the field and admin form are untouched
+- `profiles.subscription_billing_day` (1-31, nullable) — settable in the
+  client edit dialog alongside the other subscription fields
+- `/portal` "Επόμενη Πληρωμή" card now shows a real next-payment date
+  (`lib/finance.ts#nextBillingDate`, Athens-local, clamps to the last day
+  of short months) when a billing day is set; falls back to the old
+  "Ενεργή μηνιαία συνδρομή" text for clients without one
+- Migration: `supabase/migrations/0007_subscription_billing_day.sql`
+
+## Phase 6
 
 - `app_settings` singleton table (welcome_video_url, welcome_message);
   `profiles.personal_welcome_video_url` reserved for a future per-client

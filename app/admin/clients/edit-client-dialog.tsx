@@ -68,6 +68,7 @@ function EditClientForm({
         defaultAmount={client.subscription_amount}
         defaultStatus={client.subscription_status}
         defaultMethod={client.payment_method}
+        defaultBillingDay={client.subscription_billing_day}
         showStatus
       />
 

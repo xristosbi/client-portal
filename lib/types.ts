@@ -15,6 +15,8 @@ export interface Profile {
   subscription_amount: number | null;
   subscription_status: SubscriptionStatus;
   payment_method: PaymentMethod | null;
+  /** Day of month (1-31) the subscription is billed on. */
+  subscription_billing_day: number | null;
   /** Reserved for a future per-client personalized welcome video. */
   personal_welcome_video_url: string | null;
   created_at: string;

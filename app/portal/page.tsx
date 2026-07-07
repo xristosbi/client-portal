@@ -16,7 +16,7 @@ import {
 import { WelcomeVideo } from "@/components/portal/welcome-video";
 import { getProfileOrRedirect } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { currencyFormatter } from "@/lib/finance";
+import { athensToday, currencyFormatter, nextBillingDate } from "@/lib/finance";
 import type { AppSettings, Milestone, Project } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -26,6 +26,12 @@ export const metadata: Metadata = {
 const dateFormatter = new Intl.DateTimeFormat("el-GR", {
   day: "2-digit",
   month: "2-digit",
+  year: "numeric",
+});
+
+const longDateFormatter = new Intl.DateTimeFormat("el-GR", {
+  day: "numeric",
+  month: "long",
   year: "numeric",
 });
 
@@ -67,6 +73,16 @@ export default async function PortalHomePage() {
     profile.subscription_status === "active" &&
     profile.subscription_amount != null;
 
+  const nextPaymentLabel = hasActiveSubscription
+    ? profile.subscription_billing_day
+      ? longDateFormatter.format(
+          new Date(
+            `${nextBillingDate(profile.subscription_billing_day, athensToday())}T00:00:00`
+          )
+        )
+      : null
+    : null;
+
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <div>
@@ -79,12 +95,6 @@ export default async function PortalHomePage() {
       </div>
 
       {videoUrl && <WelcomeVideo url={videoUrl} />}
-
-      {settings?.welcome_message && (
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          {settings.welcome_message}
-        </p>
-      )}
 
       {project ? (
         <Card>
@@ -176,7 +186,9 @@ export default async function PortalHomePage() {
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Ενεργή μηνιαία συνδρομή
+                  {nextPaymentLabel
+                    ? `επόμενη χρέωση ${nextPaymentLabel}`
+                    : "Ενεργή μηνιαία συνδρομή"}
                 </p>
               </>
             ) : (
