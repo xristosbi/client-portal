@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Bell, CalendarClock, CreditCard, Rocket } from "lucide-react";
+import { ArrowRight, Bell, CalendarClock, CreditCard } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -13,6 +13,7 @@ import {
   MilestoneStatusBadge,
   ProjectStatusBadge,
 } from "@/components/shared/status-badges";
+import { NoProjectState } from "@/components/portal/no-project-state";
 import { WelcomeVideo } from "@/components/portal/welcome-video";
 import { getProfileOrRedirect } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -146,22 +147,7 @@ export default async function PortalHomePage() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardContent className="p-0">
-            <div className="flex flex-col items-center justify-center gap-3 py-16">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gold/10">
-                <Rocket className="h-7 w-7 text-gold" />
-              </div>
-              <p className="text-sm font-medium">
-                Το project σου θα ξεκινήσει σύντομα
-              </p>
-              <p className="max-w-sm text-center text-xs text-muted-foreground">
-                Μόλις ξεκινήσει το έργο σας, εδώ θα βλέπετε την πρόοδο και τα
-                επόμενα βήματα.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <NoProjectState />
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">

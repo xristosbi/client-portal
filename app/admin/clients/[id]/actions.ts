@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { isCurrentUserAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { MilestoneStatus, ProjectStatus } from "@/lib/types";
+import type {
+  FileFormState,
+  MilestoneStatus,
+  ProjectFileType,
+  ProjectStatus,
+} from "@/lib/types";
 
 export interface ProjectFormState {
   status: "idle" | "error" | "success";
@@ -366,4 +371,64 @@ export async function moveMilestone(
   revalidatePath("/admin/clients/[id]", "page");
 
   return {};
+}
+
+const FILE_TYPES: ProjectFileType[] = ["image", "video", "document", "other"];
+
+export async function createAdminProjectFile(
+  _prevState: FileFormState,
+  formData: FormData
+): Promise<FileFormState> {
+  if (!(await isCurrentUserAdmin())) {
+    return { status: "error", error: NO_PERMISSION };
+  }
+
+  const projectId = String(formData.get("project_id") ?? "").trim();
+  const filePath = String(formData.get("file_path") ?? "").trim();
+  const fileName = String(formData.get("file_name") ?? "").trim();
+  const rawType = String(formData.get("file_type") ?? "other");
+  const fileType = FILE_TYPES.includes(rawType as ProjectFileType)
+    ? (rawType as ProjectFileType)
+    : "other";
+  const fileSize = Number(formData.get("file_size") ?? 0);
+  const notes = String(formData.get("notes") ?? "").trim();
+  const clientId = String(formData.get("client_id") ?? "").trim();
+
+  if (!projectId || !filePath || !fileName) {
+    return { status: "error", error: "Λείπουν στοιχεία του αρχείου." };
+  }
+
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { error } = await supabase.from("project_files").insert({
+    project_id: projectId,
+    uploaded_by: user?.id ?? null,
+    file_name: fileName,
+    file_path: filePath,
+    file_type: fileType,
+    file_size: Number.isFinite(fileSize) ? Math.round(fileSize) : 0,
+    notes: notes || null,
+    is_from_admin: true,
+  });
+
+  if (error) {
+    console.error("project_files insert failed (admin):", error);
+    // Admins hold delete rights on the bucket, so clean up the orphaned
+    // upload rather than leaving a file with no matching DB row.
+    await supabase.storage.from("project-files").remove([filePath]);
+    return {
+      status: "error",
+      error: "Η καταχώρηση του αρχείου απέτυχε. Δοκιμάστε ξανά.",
+    };
+  }
+
+  if (clientId) {
+    revalidatePath(`/admin/clients/${clientId}`);
+  }
+
+  return { status: "success" };
 }

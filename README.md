@@ -9,7 +9,26 @@ Storage) · Stripe · Tailwind CSS + shadcn/ui · Resend · Vercel
 
 All user-facing UI text is in **Greek**.
 
-## Phase 7 (current)
+## Phase 8 (current)
+
+- `project_files` table + private `project-files` storage bucket for
+  client <-> admin file exchange per project (images, video, PDF, Word)
+- Client uploads go straight from the browser to Supabase Storage via a
+  signed XHR request (for real upload progress — supabase-js's storage
+  client doesn't expose progress events), then a server action records
+  the metadata row after the bytes are confirmed uploaded
+- `/portal/files`: drag-and-drop or file-picker upload with a progress
+  bar, optional note after upload, and a grid of the client's own files
+  plus anything the admin uploaded to them ("Εσείς" / "Imperial
+  Automations")
+- `/admin/clients/[id]` gains an "Αρχεία" section: same uploader (tagged
+  `is_from_admin=true`) plus the full file grid for that client's project
+- Size limits: 100MB for video, 20MB for everything else, enforced
+  client-side with a Greek error message; the storage bucket itself caps
+  at 100MB and restricts mime types as a second layer
+- Migration: `supabase/migrations/0008_project_files.sql`
+
+## Phase 7
 
 - Removed the redundant `welcome_message` display on `/portal` (header
   already covers it); the field and admin form are untouched

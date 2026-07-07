@@ -19,14 +19,19 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
+import { FileUploader } from "@/components/shared/file-uploader";
+import {
+  ProjectFilesList,
+  type ProjectFileWithUrl,
+} from "@/components/shared/project-files-list";
 import {
   MilestoneStatusBadge,
   ProjectStatusBadge,
 } from "@/components/shared/status-badges";
 import { createClient } from "@/lib/supabase/server";
 import { currencyFormatter } from "@/lib/finance";
-import type { Milestone, Profile, Project } from "@/lib/types";
-import { deleteMilestone } from "./actions";
+import type { Milestone, Profile, Project, ProjectFile } from "@/lib/types";
+import { createAdminProjectFile, deleteMilestone } from "./actions";
 import {
   EditMilestoneDialog,
   NewMilestoneDialog,
@@ -94,14 +99,42 @@ export default async function AdminClientDetailPage({
   const invoices = (invoiceData ?? []) as InvoiceRow[];
 
   let milestones: Milestone[] = [];
+  let filesWithUrls: ProjectFileWithUrl[] = [];
   if (project) {
-    const { data: milestoneData } = await supabase
-      .from("milestones")
-      .select("*")
-      .eq("project_id", project.id)
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true });
+    const [{ data: milestoneData }, { data: fileData }] = await Promise.all([
+      supabase
+        .from("milestones")
+        .select("*")
+        .eq("project_id", project.id)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("project_files")
+        .select("*")
+        .eq("project_id", project.id)
+        .order("created_at", { ascending: false }),
+    ]);
     milestones = (milestoneData ?? []) as Milestone[];
+
+    const files = (fileData ?? []) as ProjectFile[];
+    const fileSignedUrlByPath = new Map<string, string>();
+    if (files.length > 0) {
+      const { data: signed } = await supabase.storage
+        .from("project-files")
+        .createSignedUrls(
+          files.map((file) => file.file_path),
+          60 * 60
+        );
+      for (const item of signed ?? []) {
+        if (item.signedUrl && item.path) {
+          fileSignedUrlByPath.set(item.path, item.signedUrl);
+        }
+      }
+    }
+    filesWithUrls = files.map((file) => ({
+      ...file,
+      signedUrl: fileSignedUrlByPath.get(file.file_path) ?? null,
+    }));
   }
 
   const signedUrlByPath = new Map<string, string>();
@@ -208,6 +241,28 @@ export default async function AdminClientDetailPage({
                 ))}
               </ul>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {project && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              Αρχεία ({filesWithUrls.length})
+            </CardTitle>
+            <CardDescription>
+              Αρχεία που έχετε ανταλλάξει με τον πελάτη — φωτογραφίες,
+              βίντεο και έγγραφα.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <FileUploader
+              projectId={project.id}
+              action={createAdminProjectFile}
+              extraFields={{ client_id: client.id }}
+            />
+            <ProjectFilesList files={filesWithUrls} viewerRole="admin" />
           </CardContent>
         </Card>
       )}

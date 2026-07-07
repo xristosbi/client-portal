@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Check, Rocket } from "lucide-react";
+import { Check } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { NoProjectState } from "@/components/portal/no-project-state";
 import { ProjectStatusBadge } from "@/components/shared/status-badges";
 import { getProfileOrRedirect } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -63,22 +64,7 @@ export default async function PortalProjectPage() {
       </div>
 
       {!project ? (
-        <Card>
-          <CardContent className="p-0">
-            <div className="flex flex-col items-center justify-center gap-3 py-16">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gold/10">
-                <Rocket className="h-7 w-7 text-gold" />
-              </div>
-              <p className="text-sm font-medium">
-                Το project σου θα ξεκινήσει σύντομα
-              </p>
-              <p className="max-w-sm text-center text-xs text-muted-foreground">
-                Μόλις ξεκινήσει το έργο σας, εδώ θα βλέπετε την πρόοδο και το
-                χρονοδιάγραμμα.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <NoProjectState />
       ) : (
         <>
           <Card>

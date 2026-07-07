@@ -85,3 +85,23 @@ export interface AppSettings {
   welcome_message: string | null;
   updated_at: string;
 }
+
+export type ProjectFileType = "image" | "video" | "document" | "other";
+
+export interface ProjectFile {
+  id: string;
+  project_id: string;
+  uploaded_by: string | null;
+  file_name: string;
+  file_path: string;
+  file_type: ProjectFileType;
+  file_size: number;
+  notes: string | null;
+  is_from_admin: boolean;
+  created_at: string;
+}
+
+export interface FileFormState {
+  status: "idle" | "error" | "success";
+  error?: string;
+}
