@@ -11,6 +11,7 @@ import {
   buildStoragePath,
   formatFileSize,
   inferFileType,
+  mimeForFile,
   validateFile,
 } from "@/lib/files";
 import { uploadToStorage } from "@/lib/upload-client";
@@ -68,13 +69,20 @@ export function FileUploader({
         bucket: "project-files",
         path,
         file,
+        contentType: mimeForFile(file),
         onProgress: setProgress,
       });
       setPending({ path, name: file.name, type, size: file.size });
       setPhase("review");
     } catch (err) {
       console.error("upload failed:", err);
-      setError("Το ανέβασμα απέτυχε. Δοκιμάστε ξανά.");
+      // uploadToStorage errors already carry the status code and the
+      // storage-api message — show them so failures are diagnosable.
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : "Το ανέβασμα απέτυχε. Δοκιμάστε ξανά."
+      );
       setPhase("idle");
     }
   }

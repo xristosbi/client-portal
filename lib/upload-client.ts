@@ -4,7 +4,20 @@ interface UploadParams {
   bucket: string;
   path: string;
   file: File;
+  /** Content-Type to send; pass mimeForFile(file) so empty file.type never
+   * becomes application/octet-stream (rejected by the bucket allowlist). */
+  contentType?: string;
   onProgress?: (percent: number) => void;
+}
+
+/** Pulls the human-readable error out of a storage-api error response body. */
+function parseStorageError(responseText: string): string {
+  try {
+    const body = JSON.parse(responseText);
+    return body.message || body.error || body.msg || "";
+  } catch {
+    return responseText?.slice(0, 200) ?? "";
+  }
 }
 
 /**
@@ -19,6 +32,7 @@ export async function uploadToStorage({
   bucket,
   path,
   file,
+  contentType,
   onProgress,
 }: UploadParams): Promise<void> {
   const supabase = createClient();
@@ -42,7 +56,7 @@ export async function uploadToStorage({
     );
     xhr.setRequestHeader(
       "Content-Type",
-      file.type || "application/octet-stream"
+      contentType || file.type || "application/octet-stream"
     );
     xhr.setRequestHeader("x-upsert", "false");
 
@@ -56,7 +70,17 @@ export async function uploadToStorage({
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve();
       } else {
-        reject(new Error(`Το ανέβασμα απέτυχε (κωδικός ${xhr.status}).`));
+        const detail = parseStorageError(xhr.responseText);
+        console.error("storage upload failed:", {
+          status: xhr.status,
+          body: xhr.responseText,
+          url,
+        });
+        reject(
+          new Error(
+            `Το ανέβασμα απέτυχε (${xhr.status}${detail ? `: ${detail}` : ""})`
+          )
+        );
       }
     };
 

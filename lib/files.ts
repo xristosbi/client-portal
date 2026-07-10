@@ -62,6 +62,41 @@ export function formatFileSize(bytes: number): string {
   return `${value.toFixed(value < 10 ? 1 : 0)} ${units[unitIndex]}`;
 }
 
+const EXTENSION_MIME_TYPES: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  gif: "image/gif",
+  webp: "image/webp",
+  heic: "image/heic",
+  heif: "image/heif",
+  bmp: "image/bmp",
+  svg: "image/svg+xml",
+  avif: "image/avif",
+  mp4: "video/mp4",
+  mov: "video/quicktime",
+  webm: "video/webm",
+  mkv: "video/x-matroska",
+  avi: "video/x-msvideo",
+  m4v: "video/x-m4v",
+  "3gp": "video/3gpp",
+  pdf: "application/pdf",
+  doc: "application/msword",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+};
+
+/**
+ * Content-Type to send when uploading. Browsers often report an empty
+ * file.type (HEIC photos from iPhones, files dragged out of some apps), and
+ * sending application/octet-stream gets rejected by the bucket's mime
+ * allowlist — so fall back to the extension before giving up.
+ */
+export function mimeForFile(file: File): string {
+  if (file.type) return file.type;
+  const extension = file.name.toLowerCase().split(".").pop() ?? "";
+  return EXTENSION_MIME_TYPES[extension] ?? "application/octet-stream";
+}
+
 function sanitizeFileName(name: string): string {
   return name
     .normalize("NFKD")

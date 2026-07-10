@@ -61,9 +61,28 @@ values (
   'project-files',
   false,
   104857600,
+  -- Explicit mime list, not just wildcards: wildcard matching depends on
+  -- the storage-api version, and a wildcard-only list silently rejects
+  -- every upload (415) on engines that compare exact strings.
   array[
     'image/*',
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/heic',
+    'image/heif',
+    'image/bmp',
+    'image/svg+xml',
+    'image/avif',
     'video/*',
+    'video/mp4',
+    'video/quicktime',
+    'video/webm',
+    'video/x-matroska',
+    'video/x-msvideo',
+    'video/x-m4v',
+    'video/3gpp',
     'application/pdf',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
