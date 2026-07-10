@@ -9,7 +9,24 @@ Storage) · Stripe · Tailwind CSS + shadcn/ui · Resend · Vercel
 
 All user-facing UI text is in **Greek**.
 
-## Phase 8 (current)
+## Phase 9 (current)
+
+- Support tickets: `support_tickets` + `ticket_messages` tables with RLS
+  (clients see/create only their own; admin manages all); a new message
+  bumps the ticket's `updated_at` via a SECURITY DEFINER trigger so
+  active conversations sort first
+- `/portal/support` replaces the placeholder: ticket list + Νέο Αίτημα
+  dialog (subject, message, priority, auto-linked project), thread view
+  at `/portal/support/[id]` with reply box, and a Κλείσε Ραντεβού
+  section with the official Calendly inline embed (empty state when the
+  URL isn't configured)
+- `/admin/support` (added to the sidebar): all tickets with status +
+  priority filters, sorted by most recently updated; thread view at
+  `/admin/support/[id]` with reply box and a status dropdown
+- `app_settings.calendly_url` + a Calendly Link field on Ρυθμίσεις
+- Migration: `supabase/migrations/0011_support.sql`
+
+## Phase 8
 
 - `project_files` table + private `project-files` storage bucket for
   client <-> admin file exchange per project (images, video, PDF, Word)

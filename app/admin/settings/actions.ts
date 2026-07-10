@@ -31,9 +31,17 @@ export async function updateAppSettings(
 
   const videoUrl = String(formData.get("welcome_video_url") ?? "").trim();
   const message = String(formData.get("welcome_message") ?? "").trim();
+  const calendlyUrl = String(formData.get("calendly_url") ?? "").trim();
 
   if (videoUrl && !isValidUrl(videoUrl)) {
     return { status: "error", error: "Το URL του βίντεο δεν είναι έγκυρο." };
+  }
+
+  if (calendlyUrl && !isValidUrl(calendlyUrl)) {
+    return {
+      status: "error",
+      error: "Το Calendly link δεν είναι έγκυρο URL.",
+    };
   }
 
   const supabase = createClient();
@@ -44,6 +52,7 @@ export async function updateAppSettings(
       id: 1,
       welcome_video_url: videoUrl || null,
       welcome_message: message || null,
+      calendly_url: calendlyUrl || null,
     });
 
   if (error) {
@@ -56,6 +65,7 @@ export async function updateAppSettings(
 
   revalidatePath("/admin/settings");
   revalidatePath("/portal");
+  revalidatePath("/portal/support");
 
   return { status: "success" };
 }

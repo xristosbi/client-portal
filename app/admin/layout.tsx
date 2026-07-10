@@ -9,6 +9,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: "/admin/team", label: "Προσωπικό", icon: "team" },
   { href: "/admin/payments", label: "Πληρωμές", icon: "payments" },
   { href: "/admin/chat", label: "Συνομιλίες", icon: "chat" },
+  { href: "/admin/support", label: "Υποστήριξη", icon: "support" },
   { href: "/admin/settings", label: "Ρυθμίσεις", icon: "settings" },
 ];
 

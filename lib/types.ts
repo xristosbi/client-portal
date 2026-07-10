@@ -83,8 +83,45 @@ export interface AppSettings {
   id: number;
   welcome_video_url: string | null;
   welcome_message: string | null;
+  calendly_url: string | null;
   updated_at: string;
 }
+
+export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
+
+export type TicketPriority = "low" | "normal" | "high";
+
+export interface SupportTicket {
+  id: string;
+  client_id: string;
+  project_id: string | null;
+  subject: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TicketMessage {
+  id: string;
+  ticket_id: string;
+  sender_id: string | null;
+  message: string;
+  created_at: string;
+}
+
+export const TICKET_STATUS_LABELS: Record<TicketStatus, string> = {
+  open: "Ανοιχτό",
+  in_progress: "Σε εξέλιξη",
+  resolved: "Επιλύθηκε",
+  closed: "Έκλεισε",
+};
+
+export const TICKET_PRIORITY_LABELS: Record<TicketPriority, string> = {
+  low: "Χαμηλή",
+  normal: "Κανονική",
+  high: "Υψηλή",
+};
 
 export type ProjectFileType = "image" | "video" | "document" | "other";
 

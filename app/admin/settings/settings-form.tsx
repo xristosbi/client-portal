@@ -65,6 +65,20 @@ export function SettingsForm({ settings }: { settings: AppSettings | null }) {
         />
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="calendly_url">Calendly Link</Label>
+        <Input
+          id="calendly_url"
+          name="calendly_url"
+          placeholder="https://calendly.com/imperial-automations/consultation"
+          defaultValue={settings?.calendly_url ?? undefined}
+        />
+        <p className="text-xs text-muted-foreground">
+          Εμφανίζεται στη σελίδα «Υποστήριξη» των πελατών για κλείσιμο
+          ραντεβού.
+        </p>
+      </div>
+
       {state.status === "error" && state.error && (
         <p
           role="alert"
