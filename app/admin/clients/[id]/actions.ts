@@ -422,7 +422,7 @@ export async function createAdminProjectFile(
     await supabase.storage.from("project-files").remove([filePath]);
     return {
       status: "error",
-      error: "Η καταχώρηση του αρχείου απέτυχε. Δοκιμάστε ξανά.",
+      error: `Η καταχώρηση του αρχείου απέτυχε (database: ${error.message}).`,
     };
   }
 

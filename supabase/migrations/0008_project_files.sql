@@ -113,6 +113,9 @@ create policy "project_files_bucket_admin_delete"
 
 -- Files are stored as <project_id>/<uuid>-<filename>, so the first path
 -- segment gates client access to their own project's folder only.
+-- IMPORTANT: the object key column must be written as storage.objects.name
+-- here — inside the EXISTS subquery an unqualified `name` resolves to
+-- projects.name (the project title), which made the check always false.
 create policy "project_files_bucket_client_select"
   on storage.objects
   for select
@@ -120,7 +123,7 @@ create policy "project_files_bucket_client_select"
     bucket_id = 'project-files'
     and exists (
       select 1 from public.projects
-      where projects.id::text = (storage.foldername(name))[1]
+      where projects.id::text = (storage.foldername(storage.objects.name))[1]
         and projects.client_id = auth.uid()
     )
   );
@@ -132,7 +135,7 @@ create policy "project_files_bucket_client_insert"
     bucket_id = 'project-files'
     and exists (
       select 1 from public.projects
-      where projects.id::text = (storage.foldername(name))[1]
+      where projects.id::text = (storage.foldername(storage.objects.name))[1]
         and projects.client_id = auth.uid()
     )
   );

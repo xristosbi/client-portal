@@ -78,7 +78,7 @@ export async function uploadToStorage({
         });
         reject(
           new Error(
-            `Το ανέβασμα απέτυχε (${xhr.status}${detail ? `: ${detail}` : ""})`
+            `Το ανέβασμα απέτυχε (storage ${xhr.status}${detail ? `: ${detail}` : ""})`
           )
         );
       }

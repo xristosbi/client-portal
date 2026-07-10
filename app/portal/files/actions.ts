@@ -62,7 +62,7 @@ export async function createOwnProjectFile(
     console.error("project_files insert failed (client):", error);
     return {
       status: "error",
-      error: "Η καταχώρηση του αρχείου απέτυχε. Δοκιμάστε ξανά.",
+      error: `Η καταχώρηση του αρχείου απέτυχε (database: ${error.message}).`,
     };
   }
 
