@@ -61,6 +61,10 @@ export default async function AdminTicketPage({
   }
 
   const ticket = ticketData as TicketDetail;
+
+  // Opening the thread marks it read for the admin (drives the sidebar badge).
+  await supabase.rpc("mark_ticket_read", { p_ticket_id: ticket.id });
+
   const clientLabel =
     ticket.client?.full_name ||
     ticket.client?.company_name ||

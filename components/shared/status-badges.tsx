@@ -1,10 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import {
   MILESTONE_STATUS_LABELS,
+  NOTIFICATION_TYPE_LABELS,
   PROJECT_STATUS_LABELS,
   TICKET_PRIORITY_LABELS,
   TICKET_STATUS_LABELS,
   type MilestoneStatus,
+  type NotificationType,
   type ProjectStatus,
   type TicketPriority,
   type TicketStatus,
@@ -73,6 +75,21 @@ export function TicketPriorityBadge({
       className={`border-transparent ${TICKET_PRIORITY_CLASSES[priority]}`}
     >
       {TICKET_PRIORITY_LABELS[priority]}
+    </Badge>
+  );
+}
+
+const NOTIFICATION_TYPE_CLASSES: Record<NotificationType, string> = {
+  info: "bg-blue-100 text-blue-700 hover:bg-blue-100",
+  payment: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100",
+  milestone: "bg-violet-100 text-violet-700 hover:bg-violet-100",
+  support: "bg-amber-100 text-amber-700 hover:bg-amber-100",
+};
+
+export function NotificationTypeBadge({ type }: { type: NotificationType }) {
+  return (
+    <Badge className={`border-transparent ${NOTIFICATION_TYPE_CLASSES[type]}`}>
+      {NOTIFICATION_TYPE_LABELS[type]}
     </Badge>
   );
 }

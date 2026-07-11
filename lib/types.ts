@@ -98,6 +98,8 @@ export interface SupportTicket {
   subject: string;
   status: TicketStatus;
   priority: TicketPriority;
+  client_last_read_at: string | null;
+  admin_last_read_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -121,6 +123,25 @@ export const TICKET_PRIORITY_LABELS: Record<TicketPriority, string> = {
   low: "Χαμηλή",
   normal: "Κανονική",
   high: "Υψηλή",
+};
+
+export type NotificationType = "info" | "payment" | "milestone" | "support";
+
+export interface AppNotification {
+  id: string;
+  /** null = broadcast to all clients. */
+  client_id: string | null;
+  title: string;
+  message: string;
+  type: NotificationType;
+  created_at: string;
+}
+
+export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
+  info: "Ενημέρωση",
+  payment: "Πληρωμή",
+  milestone: "Ορόσημο",
+  support: "Υποστήριξη",
 };
 
 export type ProjectFileType = "image" | "video" | "document" | "other";

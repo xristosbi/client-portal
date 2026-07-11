@@ -51,6 +51,9 @@ export default async function PortalTicketPage({
 
   const ticket = ticketData as SupportTicket;
 
+  // Opening the thread marks it read for the client (drives the sidebar badge).
+  await supabase.rpc("mark_ticket_read", { p_ticket_id: ticket.id });
+
   const { data: messageData } = await supabase
     .from("ticket_messages")
     .select("*")

@@ -283,6 +283,19 @@ export async function createClientInvoice(
     };
   }
 
+  // Best-effort notification to the client — never fails the invoice save.
+  const { error: notificationError } = await supabase
+    .from("notifications")
+    .insert({
+      client_id: clientId,
+      type: "payment",
+      title: "Νέο τιμολόγιο",
+      message: `Εκδόθηκε νέο τιμολόγιο: ${parsed.fields.description}. Θα το βρείτε στη σελίδα «Τιμολόγια».`,
+    });
+  if (notificationError) {
+    console.error("invoice notification failed:", notificationError);
+  }
+
   revalidatePath("/admin/payments");
 
   return { status: "success" };

@@ -40,6 +40,8 @@ export interface NavItem {
   href: string;
   label: string;
   icon: keyof typeof ICONS;
+  /** Unread count pill; hidden when 0 or undefined. */
+  badge?: number;
 }
 
 export function SidebarNav({ items }: { items: NavItem[] }) {
@@ -72,7 +74,12 @@ export function SidebarNav({ items }: { items: NavItem[] }) {
             )}
           >
             <Icon className="h-4 w-4 shrink-0" />
-            {item.label}
+            <span className="min-w-0 flex-1 truncate">{item.label}</span>
+            {(item.badge ?? 0) > 0 && (
+              <span className="ml-auto inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-gold px-1.5 text-xs font-semibold text-gold-foreground">
+                {item.badge}
+              </span>
+            )}
           </Link>
         );
       })}

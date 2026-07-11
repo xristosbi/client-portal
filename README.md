@@ -9,7 +9,25 @@ Storage) · Stripe · Tailwind CSS + shadcn/ui · Resend · Vercel
 
 All user-facing UI text is in **Greek**.
 
-## Phase 9 (current)
+## Phase 10 (current)
+
+- Unread support badges: `client_last_read_at` / `admin_last_read_at` on
+  tickets, a `mark_ticket_read` RPC called when a thread opens, an
+  `unread_ticket_count` RPC, and a gold pill on the Υποστήριξη sidebar
+  item for both roles (hidden at 0, recomputed per navigation)
+- Notifications: `notifications` (nullable client_id = broadcast) +
+  `notification_reads` (per-client read state) with RLS;
+  `/admin/notifications` to send (to one client or all) and delete;
+  `/portal/notifications` replaces the placeholder with a read/unread
+  list where clicking marks read; unread count badge on the client's
+  Ειδοποιήσεις sidebar item (the "bell" — the desktop shell has no top
+  bar, so the sidebar item plays that role)
+- Auto-notifications: admin ticket reply → type `support`; admin invoice
+  upload → type `payment`; client-file-upload→admin skipped (the model
+  is client-scoped, as anticipated in the spec)
+- Migration: `supabase/migrations/0012_notifications_unread.sql`
+
+## Phase 9
 
 - Support tickets: `support_tickets` + `ticket_messages` tables with RLS
   (clients see/create only their own; admin manages all); a new message

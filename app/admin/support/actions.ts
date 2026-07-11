@@ -44,6 +44,28 @@ export async function adminReplyToTicket(
     };
   }
 
+  // Best-effort notification to the client — never fails the reply.
+  const { data: ticket } = await supabase
+    .from("support_tickets")
+    .select("client_id, subject")
+    .eq("id", ticketId)
+    .maybeSingle();
+
+  if (ticket) {
+    const { error: notificationError } = await supabase
+      .from("notifications")
+      .insert({
+        client_id: ticket.client_id,
+        type: "support",
+        title: `Νέα απάντηση: ${ticket.subject}`,
+        message:
+          "Λάβατε νέα απάντηση στο αίτημα υποστήριξής σας. Δείτε τη στη σελίδα «Υποστήριξη».",
+      });
+    if (notificationError) {
+      console.error("support notification failed:", notificationError);
+    }
+  }
+
   revalidatePath(`/admin/support/${ticketId}`);
   revalidatePath("/admin/support");
 
