@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { isCurrentUserAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -374,6 +375,158 @@ export async function moveMilestone(
 }
 
 const FILE_TYPES: ProjectFileType[] = ["image", "video", "document", "other"];
+
+const MAX_AGREEMENT_PDF_BYTES = 10 * 1024 * 1024;
+
+export async function saveAgreement(
+  _prevState: ProjectFormState,
+  formData: FormData
+): Promise<ProjectFormState> {
+  if (!(await isCurrentUserAdmin())) {
+    return { status: "error", error: NO_PERMISSION };
+  }
+
+  const clientId = String(formData.get("client_id") ?? "").trim();
+  const agreementId = String(formData.get("agreement_id") ?? "").trim();
+  const title = String(formData.get("title") ?? "").trim();
+  const contentType = String(formData.get("content_type") ?? "");
+
+  if (!clientId) {
+    return { status: "error", error: "Ο πελάτης δε βρέθηκε." };
+  }
+  if (!title) {
+    return { status: "error", error: "Ο τίτλος είναι υποχρεωτικός." };
+  }
+  if (contentType !== "markdown" && contentType !== "pdf") {
+    return { status: "error", error: "Επιλέξτε τύπο συμφωνίας." };
+  }
+
+  const supabase = createClient();
+
+  // Existing row (when editing): needed to know the old file to clean up.
+  let existing: {
+    id: string;
+    file_path: string | null;
+    content_type: string;
+  } | null = null;
+  if (agreementId) {
+    const { data } = await supabase
+      .from("agreements")
+      .select("id, file_path, content_type")
+      .eq("id", agreementId)
+      .eq("client_id", clientId)
+      .maybeSingle();
+    existing = data;
+    if (!existing) {
+      return { status: "error", error: "Η συμφωνία δε βρέθηκε." };
+    }
+  }
+
+  let payload: {
+    title: string;
+    content_type: "markdown" | "pdf";
+    content_markdown: string | null;
+    file_path: string | null;
+  };
+  let oldFileToRemove: string | null = null;
+
+  if (contentType === "markdown") {
+    const content = String(formData.get("content_markdown") ?? "").trim();
+    if (!content) {
+      return {
+        status: "error",
+        error: "Το κείμενο της συμφωνίας είναι υποχρεωτικό.",
+      };
+    }
+    payload = {
+      title,
+      content_type: "markdown",
+      content_markdown: content,
+      file_path: null,
+    };
+    oldFileToRemove = existing?.file_path ?? null;
+  } else {
+    const file = formData.get("file");
+    const hasNewFile = file instanceof File && file.size > 0;
+
+    if (!hasNewFile) {
+      // No new file: allowed only as a title-only update of an existing
+      // PDF agreement.
+      if (existing?.content_type === "pdf" && existing.file_path) {
+        payload = {
+          title,
+          content_type: "pdf",
+          content_markdown: null,
+          file_path: existing.file_path,
+        };
+      } else {
+        return {
+          status: "error",
+          error: "Επιλέξτε το αρχείο PDF της συμφωνίας.",
+        };
+      }
+    } else {
+      if (file.size > MAX_AGREEMENT_PDF_BYTES) {
+        return { status: "error", error: "Το αρχείο ξεπερνά το όριο των 10MB." };
+      }
+      const isPdf =
+        file.type === "application/pdf" ||
+        file.name.toLowerCase().endsWith(".pdf");
+      if (!isPdf) {
+        return { status: "error", error: "Επιτρέπονται μόνο αρχεία PDF." };
+      }
+
+      const filePath = `${clientId}/${randomUUID()}.pdf`;
+      const { error: uploadError } = await supabase.storage
+        .from("agreements")
+        .upload(filePath, file, { contentType: "application/pdf" });
+
+      if (uploadError) {
+        console.error("agreement upload failed:", uploadError);
+        return {
+          status: "error",
+          error: "Η μεταφόρτωση του αρχείου απέτυχε. Δοκιμάστε ξανά.",
+        };
+      }
+
+      payload = {
+        title,
+        content_type: "pdf",
+        content_markdown: null,
+        file_path: filePath,
+      };
+      oldFileToRemove = existing?.file_path ?? null;
+    }
+  }
+
+  const { error: writeError } = existing
+    ? await supabase.from("agreements").update(payload).eq("id", existing.id)
+    : await supabase
+        .from("agreements")
+        .insert({ client_id: clientId, ...payload });
+
+  if (writeError) {
+    console.error("agreement write failed:", writeError);
+    // Don't orphan a freshly uploaded file if the row write failed.
+    if (payload.file_path && payload.file_path !== existing?.file_path) {
+      await supabase.storage.from("agreements").remove([payload.file_path]);
+    }
+    return {
+      status: "error",
+      error: `Η αποθήκευση της συμφωνίας απέτυχε (database: ${writeError.message}).`,
+    };
+  }
+
+  // Best-effort cleanup of the replaced PDF.
+  if (oldFileToRemove && oldFileToRemove !== payload.file_path) {
+    await supabase.storage.from("agreements").remove([oldFileToRemove]);
+  }
+
+  revalidatePath(`/admin/clients/${clientId}`);
+  revalidatePath("/portal/agreement");
+
+  return { status: "success" };
+}
 
 export async function createAdminProjectFile(
   _prevState: FileFormState,

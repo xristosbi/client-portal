@@ -9,7 +9,20 @@ Storage) · Stripe · Tailwind CSS + shadcn/ui · Resend · Vercel
 
 All user-facing UI text is in **Greek**.
 
-## Phase 10 (current)
+## Phase 11 (current)
+
+- `agreements` table (markdown text OR pdf per row, most recent row per
+  client is "the" agreement) + private `agreements` storage bucket with
+  the proven folder-prefix RLS pattern
+- Admin: Συμφωνία section on `/admin/clients/[id]` — type toggle
+  (Markdown κείμενο / Ανέβασμα PDF), create + edit/replace, rendered
+  markdown preview, old PDFs cleaned up on replace
+- Client: `/portal/agreement` replaces the placeholder — markdown
+  rendered with react-markdown + @tailwindcss/typography, or a signed
+  1-hour "Προβολή PDF" link; read-only
+- Migration: `supabase/migrations/0013_agreements.sql`
+
+## Phase 10
 
 - Unread support badges: `client_last_read_at` / `admin_last_read_at` on
   tickets, a `mark_ticket_read` RPC called when a thread opens, an

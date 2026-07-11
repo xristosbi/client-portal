@@ -30,8 +30,15 @@ import {
 } from "@/components/shared/status-badges";
 import { createClient } from "@/lib/supabase/server";
 import { currencyFormatter } from "@/lib/finance";
-import type { Milestone, Profile, Project, ProjectFile } from "@/lib/types";
+import type {
+  Agreement,
+  Milestone,
+  Profile,
+  Project,
+  ProjectFile,
+} from "@/lib/types";
 import { createAdminProjectFile, deleteMilestone } from "./actions";
+import { AgreementSection } from "./agreement-section";
 import {
   EditMilestoneDialog,
   NewMilestoneDialog,
@@ -82,21 +89,38 @@ export default async function AdminClientDetailPage({
 
   const client = clientData as Profile;
 
-  const [{ data: projectData }, { data: invoiceData }] = await Promise.all([
-    supabase
-      .from("projects")
-      .select("*")
-      .eq("client_id", client.id)
-      .maybeSingle(),
-    supabase
-      .from("client_invoices")
-      .select("id, amount, description, invoice_date, file_path")
-      .eq("client_id", client.id)
-      .order("invoice_date", { ascending: false }),
-  ]);
+  const [{ data: projectData }, { data: invoiceData }, { data: agreementData }] =
+    await Promise.all([
+      supabase
+        .from("projects")
+        .select("*")
+        .eq("client_id", client.id)
+        .maybeSingle(),
+      supabase
+        .from("client_invoices")
+        .select("id, amount, description, invoice_date, file_path")
+        .eq("client_id", client.id)
+        .order("invoice_date", { ascending: false }),
+      supabase
+        .from("agreements")
+        .select("*")
+        .eq("client_id", client.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
 
   const project = projectData as Project | null;
   const invoices = (invoiceData ?? []) as InvoiceRow[];
+  const agreement = agreementData as Agreement | null;
+
+  let agreementPdfUrl: string | null = null;
+  if (agreement?.content_type === "pdf" && agreement.file_path) {
+    const { data: signed } = await supabase.storage
+      .from("agreements")
+      .createSignedUrl(agreement.file_path, 60 * 60);
+    agreementPdfUrl = signed?.signedUrl ?? null;
+  }
 
   let milestones: Milestone[] = [];
   let filesWithUrls: ProjectFileWithUrl[] = [];
@@ -266,6 +290,23 @@ export default async function AdminClientDetailPage({
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Συμφωνία</CardTitle>
+          <CardDescription>
+            Η συμφωνία που βλέπει ο πελάτης στη σελίδα «Συμφωνία» της πύλης
+            του — κείμενο Markdown ή αρχείο PDF.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AgreementSection
+            clientId={client.id}
+            agreement={agreement}
+            pdfUrl={agreementPdfUrl}
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

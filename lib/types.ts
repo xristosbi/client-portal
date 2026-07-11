@@ -144,6 +144,19 @@ export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   support: "Υποστήριξη",
 };
 
+export type AgreementContentType = "markdown" | "pdf";
+
+export interface Agreement {
+  id: string;
+  client_id: string;
+  title: string;
+  content_type: AgreementContentType;
+  content_markdown: string | null;
+  file_path: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export type ProjectFileType = "image" | "video" | "document" | "other";
 
 export interface ProjectFile {
