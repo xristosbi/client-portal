@@ -3,6 +3,7 @@
 import { randomInt } from "crypto";
 import { revalidatePath } from "next/cache";
 import { isCurrentUserAdmin } from "@/lib/auth";
+import { sendWelcomeEmail } from "@/lib/email";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { PaymentMethod, SubscriptionStatus } from "@/lib/types";
@@ -12,6 +13,7 @@ export interface CreateClientState {
   error?: string;
   email?: string;
   tempPassword?: string;
+  fullName?: string;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -200,7 +202,38 @@ export async function createClientAccount(
   revalidatePath("/admin/clients");
   revalidatePath("/admin");
 
-  return { status: "success", email, tempPassword };
+  return { status: "success", email, tempPassword, fullName };
+}
+
+export async function sendWelcomeEmailAction(input: {
+  fullName: string;
+  email: string;
+  tempPassword: string;
+}): Promise<{ error?: string }> {
+  if (!(await isCurrentUserAdmin())) {
+    return { error: "Δεν έχετε δικαίωμα για αυτή την ενέργεια." };
+  }
+
+  const email = input.email.trim().toLowerCase();
+  const tempPassword = input.tempPassword;
+
+  if (!EMAIL_RE.test(email) || !tempPassword) {
+    return { error: "Τα στοιχεία του email δεν είναι έγκυρα." };
+  }
+
+  const { error } = await sendWelcomeEmail({
+    fullName: input.fullName.trim(),
+    email,
+    tempPassword,
+  });
+
+  if (error) {
+    return {
+      error: `Η αποστολή του email απέτυχε (${error}).`,
+    };
+  }
+
+  return {};
 }
 
 export interface UpdateSubscriptionState {

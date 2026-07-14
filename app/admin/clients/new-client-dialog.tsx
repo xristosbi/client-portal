@@ -1,8 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { Copy, Loader2, ShieldAlert, UserPlus } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Loader2,
+  Mail,
+  ShieldAlert,
+  UserPlus,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   createClientAccount,
+  sendWelcomeEmailAction,
   type CreateClientState,
 } from "./actions";
 import { SubscriptionFields } from "./subscription-fields";
@@ -35,6 +43,62 @@ function SubmitButton() {
         </>
       ) : (
         "Δημιουργία Πελάτη"
+      )}
+    </Button>
+  );
+}
+
+function SendWelcomeEmailButton({
+  fullName,
+  email,
+  tempPassword,
+}: {
+  fullName: string;
+  email: string;
+  tempPassword: string;
+}) {
+  const [sending, startTransition] = useTransition();
+  const [sent, setSent] = useState(false);
+
+  function handleSend() {
+    startTransition(async () => {
+      const result = await sendWelcomeEmailAction({
+        fullName,
+        email,
+        tempPassword,
+      });
+      if (result?.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Το email καλωσορίσματος στάλθηκε.");
+        setSent(true);
+      }
+    });
+  }
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      className="w-full"
+      onClick={handleSend}
+      disabled={sending || sent}
+    >
+      {sending ? (
+        <>
+          <Loader2 className="animate-spin" />
+          Αποστολή…
+        </>
+      ) : sent ? (
+        <>
+          <Check />
+          Το email στάλθηκε
+        </>
+      ) : (
+        <>
+          <Mail />
+          Αποστολή Welcome Email
+        </>
       )}
     </Button>
   );
@@ -77,6 +141,14 @@ function NewClientForm() {
           <span className="text-muted-foreground">Email σύνδεσης: </span>
           <span className="font-medium">{state.email}</span>
         </div>
+        <SendWelcomeEmailButton
+          fullName={state.fullName ?? ""}
+          email={state.email!}
+          tempPassword={state.tempPassword}
+        />
+        <p className="text-center text-xs text-muted-foreground">
+          Στέλνει στον πελάτη τα στοιχεία σύνδεσης με τον προσωρινό κωδικό.
+        </p>
       </div>
     );
   }
