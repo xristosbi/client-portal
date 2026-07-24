@@ -126,7 +126,7 @@ export default async function PortalSupportPage() {
         <CardHeader>
           <CardTitle className="text-base">Κλείσε Ραντεβού</CardTitle>
           <CardDescription>
-            Κλείστε μια κλήση με την ομάδα της Imperial Automations.
+            Κλείστε μια κλήση με την ομάδα της CB Automates.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -134,8 +134,8 @@ export default async function PortalSupportPage() {
             <CalendlyEmbed url={settings.calendly_url} />
           ) : (
             <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-16">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gold/10">
-                <CalendarDays className="h-6 w-6 text-gold" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <CalendarDays className="h-6 w-6 text-muted-foreground" />
               </div>
               <p className="max-w-sm text-center text-sm text-muted-foreground">
                 Δεν έχει ρυθμιστεί ακόμα η δυνατότητα κλεισίματος ραντεβού.

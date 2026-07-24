@@ -91,7 +91,7 @@ export default async function PortalHomePage() {
           Καλώς ήρθατε{displayName ? `, ${displayName}` : ""}!
         </h1>
         <p className="mt-1 text-muted-foreground">
-          Αυτή είναι η προσωπική σας πύλη στην Imperial Automations.
+          Αυτή είναι η προσωπική σας πύλη στην CB Automates.
         </p>
       </div>
 
@@ -111,8 +111,8 @@ export default async function PortalHomePage() {
           <CardContent className="space-y-4">
             {nextMilestone ? (
               <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gold/10">
-                  <CalendarClock className="h-4 w-4 text-gold" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
+                  <CalendarClock className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -156,9 +156,7 @@ export default async function PortalHomePage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Επόμενη Πληρωμή
             </CardTitle>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold/10">
-              <CreditCard className="h-4 w-4 text-gold" />
-            </div>
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             {hasActiveSubscription ? (
@@ -190,9 +188,7 @@ export default async function PortalHomePage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Τελευταία Ειδοποίηση
             </CardTitle>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold/10">
-              <Bell className="h-4 w-4 text-gold" />
-            </div>
+            <Bell className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">

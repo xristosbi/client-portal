@@ -69,7 +69,7 @@ export default async function PortalTicketPage({
       created_at: message.created_at,
       isOwn: message.sender_id === profile.id,
       senderLabel:
-        message.sender_id === profile.id ? "Εσείς" : "Imperial Automations",
+        message.sender_id === profile.id ? "Εσείς" : "CB Automates",
     })
   );
 

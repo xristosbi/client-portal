@@ -20,8 +20,8 @@ export default function AdminChatPage() {
       <Card>
         <CardContent className="p-0">
           <div className="flex flex-col items-center justify-center gap-3 py-20">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gold/10">
-              <MessagesSquare className="h-7 w-7 text-gold" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+              <MessagesSquare className="h-7 w-7 text-muted-foreground" />
             </div>
             <p className="text-sm font-medium">Σύντομα διαθέσιμο</p>
             <p className="max-w-sm text-center text-xs text-muted-foreground">

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Crown } from "lucide-react";
+import Image from "next/image";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
@@ -12,7 +12,7 @@ export default function LoginPage() {
       {/* Decorative background */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,164,44,0.12),transparent_55%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,164,44,0.07),transparent_55%)]"
       />
       <div
         aria-hidden
@@ -21,16 +21,21 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-gold/30 bg-gold/10">
-            <Crown className="h-7 w-7 text-gold" />
-          </div>
+          <Image
+            src="/logo.png"
+            alt="CB Automates"
+            width={93}
+            height={64}
+            priority
+            className="mb-4 h-16 w-auto"
+          />
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-50">
-            Imperial Automations
+            CB Automates
           </h1>
           <p className="mt-1 text-sm text-zinc-400">Πύλη Πελατών</p>
         </div>
 
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-6 shadow-2xl backdrop-blur sm:p-8">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-6 shadow-2xl backdrop-blur sm:p-8">
           <h2 className="mb-1 text-lg font-medium text-zinc-100">
             Σύνδεση στον λογαριασμό σας
           </h2>

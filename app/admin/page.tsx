@@ -62,7 +62,7 @@ export default async function AdminDashboardPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Επισκόπηση</h1>
         <p className="mt-1 text-muted-foreground">
-          Η συνολική εικόνα της Imperial Automations — πελάτες, έσοδα και
+          Η συνολική εικόνα της CB Automates — πελάτες, έσοδα και
           δραστηριότητα.
         </p>
       </div>
@@ -74,9 +74,7 @@ export default async function AdminDashboardPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Ενεργοί Πελάτες
             </CardTitle>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold/10">
-              <Users className="h-4 w-4 text-gold" />
-            </div>
+            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-semibold">{clientCount ?? 0}</div>
@@ -91,9 +89,7 @@ export default async function AdminDashboardPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               MRR (Μηνιαία Επαναλαμβανόμενα Έσοδα)
             </CardTitle>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold/10">
-              <Repeat className="h-4 w-4 text-gold" />
-            </div>
+            <Repeat className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-semibold">
@@ -117,8 +113,8 @@ export default async function AdminDashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-lg border border-dashed bg-muted/30">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gold/10">
-              <Euro className="h-6 w-6 text-gold" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+              <Euro className="h-6 w-6 text-muted-foreground" />
             </div>
             <p className="text-sm font-medium">
               Δεν υπάρχουν ακόμα δεδομένα εσόδων

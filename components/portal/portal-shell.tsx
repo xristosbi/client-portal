@@ -1,4 +1,4 @@
-import { Crown } from "lucide-react";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { SidebarNav, type NavItem } from "@/components/portal/sidebar-nav";
 import { UserMenu } from "@/components/portal/user-menu";
@@ -16,12 +16,16 @@ export function PortalShell({ profile, navItems, children }: PortalShellProps) {
       {/* Sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-zinc-800 bg-zinc-950 md:flex">
         <div className="flex items-center gap-3 px-5 py-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-gold/30 bg-gold/10">
-            <Crown className="h-5 w-5 text-gold" />
-          </div>
+          <Image
+            src="/logo.png"
+            alt="CB Automates"
+            width={52}
+            height={36}
+            className="h-9 w-auto shrink-0"
+          />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-zinc-50">
-              Imperial Automations
+              CB Automates
             </p>
             <p className="text-xs text-zinc-500">Πύλη Πελατών</p>
           </div>
@@ -41,9 +45,15 @@ export function PortalShell({ profile, navItems, children }: PortalShellProps) {
         {/* Mobile header */}
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-zinc-800 bg-zinc-950 px-4 py-3 md:hidden">
           <div className="flex items-center gap-2">
-            <Crown className="h-5 w-5 text-gold" />
+            <Image
+              src="/logo.png"
+              alt="CB Automates"
+              width={41}
+              height={28}
+              className="h-7 w-auto"
+            />
             <span className="text-sm font-semibold text-zinc-50">
-              Imperial Automations
+              CB Automates
             </span>
             {profile.role === "admin" && (
               <Badge className="bg-gold/15 text-gold hover:bg-gold/15">

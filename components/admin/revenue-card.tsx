@@ -36,9 +36,7 @@ export function RevenueCard({ totals }: { totals: RevenueTotals }) {
         <CardTitle className="text-sm font-medium text-muted-foreground">
           Έσοδα
         </CardTitle>
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold/10">
-          <Euro className="h-4 w-4 text-gold" />
-        </div>
+        <Euro className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent className="space-y-3">
         <Select

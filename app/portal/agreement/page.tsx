@@ -50,7 +50,7 @@ export default async function PortalAgreementPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Συμφωνία</h1>
         <p className="mt-1 text-muted-foreground">
-          Η συμφωνία συνεργασίας σας με την Imperial Automations.
+          Η συμφωνία συνεργασίας σας με την CB Automates.
         </p>
       </div>
 
@@ -58,8 +58,8 @@ export default async function PortalAgreementPage() {
         <Card>
           <CardContent className="p-0">
             <div className="flex flex-col items-center justify-center gap-3 py-16">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gold/10">
-                <FileSignature className="h-7 w-7 text-gold" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                <FileSignature className="h-7 w-7 text-muted-foreground" />
               </div>
               <p className="text-sm font-medium">
                 Η συμφωνία σου θα είναι διαθέσιμη εδώ σύντομα.
@@ -82,8 +82,8 @@ export default async function PortalAgreementPage() {
               <MarkdownContent content={agreement.content_markdown} />
             ) : pdfUrl ? (
               <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed py-12">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gold/10">
-                  <FileText className="h-6 w-6 text-gold" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                  <FileText className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <a
                   href={pdfUrl}

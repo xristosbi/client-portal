@@ -36,7 +36,7 @@ export default async function PortalNotificationsPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Ειδοποιήσεις</h1>
         <p className="mt-1 text-muted-foreground">
-          Ενημερώσεις από την Imperial Automations.
+          Ενημερώσεις από την CB Automates.
         </p>
       </div>
 
@@ -44,8 +44,8 @@ export default async function PortalNotificationsPage() {
         <Card>
           <CardContent className="p-0">
             <div className="flex flex-col items-center justify-center gap-3 py-16">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gold/10">
-                <Bell className="h-7 w-7 text-gold" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                <Bell className="h-7 w-7 text-muted-foreground" />
               </div>
               <p className="text-sm font-medium">
                 Δεν έχεις ακόμα ειδοποιήσεις

@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const FROM_ADDRESS = "Imperial Automations <onboarding@imperialautomations.com>";
+const FROM_ADDRESS = "CB Automates <onboarding@imperialautomations.com>";
 
 const GOLD = "#d4a42c";
 const DARK = "#0c0a09";
@@ -24,7 +24,8 @@ function buildWelcomeEmailHtml({
   email,
   tempPassword,
   loginUrl,
-}: WelcomeEmailParams & { loginUrl: string }): string {
+  logoUrl,
+}: WelcomeEmailParams & { loginUrl: string; logoUrl: string }): string {
   const name = escapeHtml(fullName);
   const safeEmail = escapeHtml(email);
   const safePassword = escapeHtml(tempPassword);
@@ -46,8 +47,9 @@ function buildWelcomeEmailHtml({
           <!-- Header -->
           <tr>
             <td style="background-color:${DARK};padding:28px 32px;text-align:center;">
-              <div style="font-size:20px;font-weight:bold;color:#fafafa;letter-spacing:0.5px;">
-                Imperial <span style="color:${GOLD};">Automations</span>
+              <img src="${logoUrl}" alt="CB Automates" height="48" style="height:48px;width:auto;display:inline-block;" />
+              <div style="font-size:18px;font-weight:bold;color:#fafafa;letter-spacing:0.5px;margin-top:10px;">
+                CB <span style="color:${GOLD};">Automates</span>
               </div>
               <div style="font-size:12px;color:#a1a1aa;margin-top:4px;">Πύλη Πελατών</div>
             </td>
@@ -59,7 +61,7 @@ function buildWelcomeEmailHtml({
                 Γεια σας${name ? `, <strong>${name}</strong>` : ""}!
               </p>
               <p style="font-size:14px;line-height:1.6;color:#3f3f46;margin:0 0 24px;">
-                Καλώς ήρθατε στην Πύλη Πελατών της Imperial Automations. Εδώ θα
+                Καλώς ήρθατε στην Πύλη Πελατών της CB Automates. Εδώ θα
                 παρακολουθείτε την πρόοδο του project σας, τα τιμολόγιά σας, τα
                 αρχεία και την επικοινωνία μας — όλα σε ένα σημείο.
               </p>
@@ -98,7 +100,7 @@ function buildWelcomeEmailHtml({
           <tr>
             <td style="background-color:#fafafa;border-top:1px solid #e4e4e7;padding:20px 32px;text-align:center;">
               <div style="font-size:12px;color:#a1a1aa;">
-                © ${new Date().getFullYear()} Imperial Automations
+                © ${new Date().getFullYear()} CB Automates
               </div>
             </td>
           </tr>
@@ -124,14 +126,16 @@ export async function sendWelcomeEmail(
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
   ).replace(/\/+$/, "");
   const loginUrl = `${siteUrl}/login`;
+  // Email clients need an absolute URL for images.
+  const logoUrl = `${siteUrl}/logo.png`;
 
   const resend = new Resend(apiKey);
 
   const { error } = await resend.emails.send({
     from: FROM_ADDRESS,
     to: params.email,
-    subject: "Καλώς ήρθατε στην Πύλη Πελατών της Imperial Automations",
-    html: buildWelcomeEmailHtml({ ...params, loginUrl }),
+    subject: "Καλώς ήρθατε στην Πύλη Πελατών της CB Automates",
+    html: buildWelcomeEmailHtml({ ...params, loginUrl, logoUrl }),
   });
 
   if (error) {

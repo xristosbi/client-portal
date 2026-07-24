@@ -1,6 +1,6 @@
-# Imperial Automations — Client Portal
+# CB Automates — Client Portal
 
-Premium client portal for Imperial Automations (AI automation agency). Clients
+Premium client portal for CB Automates (AI automation agency). Clients
 log in with credentials issued by the agency and see only their own data; the
 admin has full visibility across all clients.
 
