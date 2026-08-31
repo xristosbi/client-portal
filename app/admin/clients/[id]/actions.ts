@@ -378,6 +378,51 @@ const FILE_TYPES: ProjectFileType[] = ["image", "video", "document", "other"];
 
 const MAX_AGREEMENT_PDF_BYTES = 10 * 1024 * 1024;
 
+export async function deleteClientInvoice(
+  invoiceId: string
+): Promise<{ error?: string }> {
+  if (!(await isCurrentUserAdmin())) {
+    return { error: NO_PERMISSION };
+  }
+
+  const supabase = createClient();
+
+  const { data: invoice } = await supabase
+    .from("client_invoices")
+    .select("id, client_id, file_path")
+    .eq("id", invoiceId)
+    .maybeSingle();
+
+  if (!invoice) {
+    return { error: "Το τιμολόγιο δε βρέθηκε." };
+  }
+
+  const { error } = await supabase
+    .from("client_invoices")
+    .delete()
+    .eq("id", invoiceId);
+
+  if (error) {
+    console.error("invoice delete failed:", error);
+    return { error: `Η διαγραφή απέτυχε (database: ${error.message}).` };
+  }
+
+  // Remove the PDF too — best effort, the row is already gone.
+  if (invoice.file_path) {
+    const { error: removeError } = await supabase.storage
+      .from("client-invoices")
+      .remove([invoice.file_path]);
+    if (removeError) {
+      console.error("invoice file cleanup failed:", removeError);
+    }
+  }
+
+  revalidatePath(`/admin/clients/${invoice.client_id}`);
+  revalidatePath("/admin/payments");
+
+  return {};
+}
+
 export async function saveAgreement(
   _prevState: ProjectFormState,
   formData: FormData

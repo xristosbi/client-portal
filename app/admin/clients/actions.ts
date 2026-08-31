@@ -294,29 +294,66 @@ export async function deleteClientAccount(
 
   const admin = createAdminClient();
 
-  // client_invoices is ON DELETE RESTRICT — check first for a clear message.
-  const { count: invoiceCount } = await admin
-    .from("client_invoices")
-    .select("*", { count: "exact", head: true })
+  // Collect storage paths BEFORE the cascade removes the rows that name
+  // them — the database cascade deletes rows, never bucket objects.
+  const { data: projects } = await admin
+    .from("projects")
+    .select("id")
     .eq("client_id", clientId);
+  const projectIds = (projects ?? []).map((project) => project.id);
 
-  if (invoiceCount && invoiceCount > 0) {
-    return {
-      error: "Δεν μπορείς να διαγράψεις πελάτη με καταχωρημένα τιμολόγια.",
-    };
-  }
+  const [{ data: invoices }, { data: agreements }, { data: projectFiles }] =
+    await Promise.all([
+      admin
+        .from("client_invoices")
+        .select("file_path")
+        .eq("client_id", clientId),
+      admin.from("agreements").select("file_path").eq("client_id", clientId),
+      projectIds.length > 0
+        ? admin
+            .from("project_files")
+            .select("file_path")
+            .in("project_id", projectIds)
+        : Promise.resolve({ data: [] as { file_path: string }[] }),
+    ]);
 
-  // Deleting the auth user cascades to the profile (and its project).
+  const invoicePaths = (invoices ?? [])
+    .map((row) => row.file_path)
+    .filter(Boolean);
+  const agreementPaths = (agreements ?? [])
+    .map((row) => row.file_path)
+    .filter((path): path is string => Boolean(path));
+  const projectFilePaths = (projectFiles ?? [])
+    .map((row) => row.file_path)
+    .filter(Boolean);
+
+  // Delete the auth user first: it cascades every owned row, so the
+  // database stays consistent even if bucket cleanup below fails.
   const { error } = await admin.auth.admin.deleteUser(clientId);
 
   if (error) {
     console.error("client delete failed:", error);
-    if (error.message?.includes("client_invoices")) {
-      return {
-        error: "Δεν μπορείς να διαγράψεις πελάτη με καταχωρημένα τιμολόγια.",
-      };
+    return {
+      error: `Η διαγραφή του πελάτη απέτυχε (${error.message}).`,
+    };
+  }
+
+  // Best-effort bucket cleanup — failures leave orphaned files, which is
+  // preferable to leaving rows that point at deleted files.
+  const cleanups: { bucket: string; paths: string[] }[] = [
+    { bucket: "client-invoices", paths: invoicePaths },
+    { bucket: "agreements", paths: agreementPaths },
+    { bucket: "project-files", paths: projectFilePaths },
+  ];
+
+  for (const { bucket, paths } of cleanups) {
+    if (paths.length === 0) continue;
+    const { error: removeError } = await admin.storage
+      .from(bucket)
+      .remove(paths);
+    if (removeError) {
+      console.error(`storage cleanup failed for ${bucket}:`, removeError);
     }
-    return { error: "Η διαγραφή του πελάτη απέτυχε. Δοκιμάστε ξανά." };
   }
 
   revalidatePath("/admin/clients");

@@ -78,16 +78,91 @@ function SubscriptionCell({ client }: { client: Profile }) {
   );
 }
 
+/** What a client delete would take with it, for the warning dialog. */
+interface RelatedCounts {
+  projects: number;
+  invoices: number;
+  files: number;
+  tickets: number;
+  agreements: number;
+}
+
+function countBy<T>(rows: T[] | null, key: (row: T) => string | null) {
+  const counts = new Map<string, number>();
+  for (const row of rows ?? []) {
+    const id = key(row);
+    if (!id) continue;
+    counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function deletionDetails(counts: RelatedCounts | undefined): string[] {
+  if (!counts) return [];
+  const details: string[] = [];
+  if (counts.projects > 0) details.push("Το project και τα milestones του");
+  if (counts.invoices > 0) details.push(`${counts.invoices} τιμολόγια`);
+  if (counts.files > 0) details.push(`${counts.files} αρχεία`);
+  if (counts.tickets > 0)
+    details.push(`${counts.tickets} αιτήματα υποστήριξης`);
+  if (counts.agreements > 0) details.push("Η συμφωνία συνεργασίας");
+  return details;
+}
+
 export default async function AdminClientsPage() {
   const supabase = createClient();
 
-  const { data } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("role", "client")
-    .order("created_at", { ascending: false });
+  // Related rows are fetched in bulk (id columns only) and counted in
+  // memory, so the warning dialog doesn't cost one query per client.
+  const [
+    { data },
+    { data: projectRows },
+    { data: invoiceRows },
+    { data: fileRows },
+    { data: ticketRows },
+    { data: agreementRows },
+  ] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("*")
+      .eq("role", "client")
+      .order("created_at", { ascending: false }),
+    supabase.from("projects").select("id, client_id"),
+    supabase.from("client_invoices").select("client_id"),
+    supabase.from("project_files").select("project_id"),
+    supabase.from("support_tickets").select("client_id"),
+    supabase.from("agreements").select("client_id"),
+  ]);
 
   const clients = (data ?? []) as Profile[];
+
+  const clientIdByProject = new Map(
+    (projectRows ?? []).map((row) => [row.id as string, row.client_id as string])
+  );
+  const projectCounts = countBy(projectRows, (row) => row.client_id as string);
+  const invoiceCounts = countBy(invoiceRows, (row) => row.client_id as string);
+  const ticketCounts = countBy(ticketRows, (row) => row.client_id as string);
+  const agreementCounts = countBy(
+    agreementRows,
+    (row) => row.client_id as string
+  );
+  const fileCounts = countBy(
+    fileRows,
+    (row) => clientIdByProject.get(row.project_id as string) ?? null
+  );
+
+  const relatedByClient = new Map<string, RelatedCounts>(
+    clients.map((client) => [
+      client.id,
+      {
+        projects: projectCounts.get(client.id) ?? 0,
+        invoices: invoiceCounts.get(client.id) ?? 0,
+        files: fileCounts.get(client.id) ?? 0,
+        tickets: ticketCounts.get(client.id) ?? 0,
+        agreements: agreementCounts.get(client.id) ?? 0,
+      },
+    ])
+  );
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -152,10 +227,37 @@ export default async function AdminClientsPage() {
                           </Link>
                         </Button>
                         <EditClientDialog client={client} />
-                        <ConfirmDeleteDialog
-                          action={deleteClientAccount.bind(null, client.id)}
-                          description={`Σίγουρα θες να διαγράψεις τον πελάτη «${client.full_name || client.email}»; Θα διαγραφεί και το project του. Τα τιμολόγιά του (αν υπάρχουν) εμποδίζουν τη διαγραφή.`}
-                        />
+                        {(() => {
+                          const clientLabel =
+                            client.full_name || client.email;
+                          const details = deletionDetails(
+                            relatedByClient.get(client.id)
+                          );
+                          // Typed confirmation only when there is data to
+                          // lose — a clean account deletes with one click.
+                          return (
+                            <ConfirmDeleteDialog
+                              action={deleteClientAccount.bind(
+                                null,
+                                client.id
+                              )}
+                              title={`Διαγραφή πελάτη «${clientLabel}»`}
+                              description={
+                                details.length > 0
+                                  ? "Ο λογαριασμός του πελάτη και όλα τα δεδομένα του θα διαγραφούν οριστικά, μαζί με τα αρχεία τους."
+                                  : `Σίγουρα θες να διαγράψεις τον πελάτη «${clientLabel}»;`
+                              }
+                              details={[
+                                "Ο λογαριασμός πρόσβασης στην πύλη",
+                                ...details,
+                              ]}
+                              confirmPhrase={
+                                details.length > 0 ? clientLabel : undefined
+                              }
+                              successMessage="Ο πελάτης διαγράφηκε."
+                            />
+                          );
+                        })()}
                       </div>
                     </TableCell>
                   </TableRow>

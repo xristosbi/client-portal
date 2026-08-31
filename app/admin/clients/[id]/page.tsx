@@ -37,7 +37,11 @@ import type {
   Project,
   ProjectFile,
 } from "@/lib/types";
-import { createAdminProjectFile, deleteMilestone } from "./actions";
+import {
+  createAdminProjectFile,
+  deleteClientInvoice,
+  deleteMilestone,
+} from "./actions";
 import { AgreementSection } from "./agreement-section";
 import {
   EditMilestoneDialog,
@@ -331,6 +335,7 @@ export default async function AdminClientDetailPage({
                   <TableHead>Περιγραφή</TableHead>
                   <TableHead>Ημερομηνία</TableHead>
                   <TableHead>Αρχείο</TableHead>
+                  <TableHead className="text-right">Ενέργειες</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -357,6 +362,13 @@ export default async function AdminClientDetailPage({
                         ) : (
                           "—"
                         )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <ConfirmDeleteDialog
+                          action={deleteClientInvoice.bind(null, invoice.id)}
+                          description={`Σίγουρα θες να διαγράψεις το τιμολόγιο «${invoice.description}»; Θα διαγραφεί και το αρχείο PDF.`}
+                          successMessage="Το τιμολόγιο διαγράφηκε."
+                        />
                       </TableCell>
                     </TableRow>
                   );
