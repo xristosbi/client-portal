@@ -17,7 +17,7 @@ function uploaderLabel(
   file: ProjectFile,
   viewerRole: "client" | "admin"
 ): string {
-  if (file.is_from_admin) return "CB Automates";
+  if (file.is_from_admin) return "CB Automations";
   return viewerRole === "client" ? "Εσείς" : "Ο πελάτης";
 }
 

@@ -18,14 +18,14 @@ export default function ResetPasswordPage() {
         <div className="mb-8 flex flex-col items-center text-center">
           <Image
             src="/logo.png"
-            alt="CB Automates"
+            alt="CB Automations"
             width={93}
             height={64}
             priority
             className="mb-4 h-16 w-auto"
           />
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-50">
-            CB Automates
+            CB Automations
           </h1>
           <p className="mt-1 text-sm text-zinc-400">Πύλη Πελατών</p>
         </div>

@@ -126,7 +126,7 @@ export default async function PortalSupportPage() {
         <CardHeader>
           <CardTitle className="text-base">Κλείσε Ραντεβού</CardTitle>
           <CardDescription>
-            Κλείστε μια κλήση με την ομάδα της CB Automates.
+            Κλείστε μια κλήση με την ομάδα της CB Automations.
           </CardDescription>
         </CardHeader>
         <CardContent>

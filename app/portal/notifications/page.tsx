@@ -36,7 +36,7 @@ export default async function PortalNotificationsPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Ειδοποιήσεις</h1>
         <p className="mt-1 text-muted-foreground">
-          Ενημερώσεις από την CB Automates.
+          Ενημερώσεις από την CB Automations.
         </p>
       </div>
 

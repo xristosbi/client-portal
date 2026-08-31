@@ -91,7 +91,7 @@ export default async function PortalHomePage() {
           Καλώς ήρθατε{displayName ? `, ${displayName}` : ""}!
         </h1>
         <p className="mt-1 text-muted-foreground">
-          Αυτή είναι η προσωπική σας πύλη στην CB Automates.
+          Αυτή είναι η προσωπική σας πύλη στην CB Automations.
         </p>
       </div>
 

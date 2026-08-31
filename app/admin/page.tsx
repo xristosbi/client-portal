@@ -62,7 +62,7 @@ export default async function AdminDashboardPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Επισκόπηση</h1>
         <p className="mt-1 text-muted-foreground">
-          Η συνολική εικόνα της CB Automates — πελάτες, έσοδα και
+          Η συνολική εικόνα της CB Automations — πελάτες, έσοδα και
           δραστηριότητα.
         </p>
       </div>

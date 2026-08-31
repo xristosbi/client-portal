@@ -10,11 +10,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "CB Automates — Πύλη Πελατών",
-    template: "%s | CB Automates",
+    default: "CB Automations — Πύλη Πελατών",
+    template: "%s | CB Automations",
   },
   description:
-    "Η πύλη πελατών της CB Automates. Παρακολουθήστε τα έργα σας, τις πληρωμές και την επικοινωνία σας σε ένα σημείο.",
+    "Η πύλη πελατών της CB Automations. Παρακολουθήστε τα έργα σας, τις πληρωμές και την επικοινωνία σας σε ένα σημείο.",
 };
 
 export default function RootLayout({

@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const FROM_ADDRESS = "CB Automates <onboarding@imperialautomations.com>";
+const FROM_ADDRESS = "CB Automations <onboarding@imperialautomations.com>";
 
 const GOLD = "#d4a42c";
 const DARK = "#0c0a09";
@@ -47,9 +47,9 @@ function buildWelcomeEmailHtml({
           <!-- Header -->
           <tr>
             <td style="background-color:${DARK};padding:28px 32px;text-align:center;">
-              <img src="${logoUrl}" alt="CB Automates" height="48" style="height:48px;width:auto;display:inline-block;" />
+              <img src="${logoUrl}" alt="CB Automations" height="48" style="height:48px;width:auto;display:inline-block;" />
               <div style="font-size:18px;font-weight:bold;color:#fafafa;letter-spacing:0.5px;margin-top:10px;">
-                CB <span style="color:${GOLD};">Automates</span>
+                CB <span style="color:${GOLD};">Automations</span>
               </div>
               <div style="font-size:12px;color:#a1a1aa;margin-top:4px;">Πύλη Πελατών</div>
             </td>
@@ -61,7 +61,7 @@ function buildWelcomeEmailHtml({
                 Γεια σας${name ? `, <strong>${name}</strong>` : ""}!
               </p>
               <p style="font-size:14px;line-height:1.6;color:#3f3f46;margin:0 0 24px;">
-                Καλώς ήρθατε στην Πύλη Πελατών της CB Automates. Εδώ θα
+                Καλώς ήρθατε στην Πύλη Πελατών της CB Automations. Εδώ θα
                 παρακολουθείτε την πρόοδο του project σας, τα τιμολόγιά σας, τα
                 αρχεία και την επικοινωνία μας — όλα σε ένα σημείο.
               </p>
@@ -100,7 +100,7 @@ function buildWelcomeEmailHtml({
           <tr>
             <td style="background-color:#fafafa;border-top:1px solid #e4e4e7;padding:20px 32px;text-align:center;">
               <div style="font-size:12px;color:#a1a1aa;">
-                © ${new Date().getFullYear()} CB Automates
+                © ${new Date().getFullYear()} CB Automations
               </div>
             </td>
           </tr>
@@ -134,7 +134,7 @@ export async function sendWelcomeEmail(
   const { error } = await resend.emails.send({
     from: FROM_ADDRESS,
     to: params.email,
-    subject: "Καλώς ήρθατε στην Πύλη Πελατών της CB Automates",
+    subject: "Καλώς ήρθατε στην Πύλη Πελατών της CB Automations",
     html: buildWelcomeEmailHtml({ ...params, loginUrl, logoUrl }),
   });
 

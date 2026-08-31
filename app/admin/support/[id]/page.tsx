@@ -87,7 +87,7 @@ export default async function AdminTicketPage({
       created_at: message.created_at,
       isOwn: message.sender_id === profile.id,
       senderLabel: isAdminMessage
-        ? "CB Automates"
+        ? "CB Automations"
         : message.sender?.full_name || clientLabel,
     };
   });

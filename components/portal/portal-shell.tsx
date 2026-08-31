@@ -18,14 +18,14 @@ export function PortalShell({ profile, navItems, children }: PortalShellProps) {
         <div className="flex items-center gap-3 px-5 py-5">
           <Image
             src="/logo.png"
-            alt="CB Automates"
+            alt="CB Automations"
             width={52}
             height={36}
             className="h-9 w-auto shrink-0"
           />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-zinc-50">
-              CB Automates
+              CB Automations
             </p>
             <p className="text-xs text-zinc-500">Πύλη Πελατών</p>
           </div>
@@ -47,13 +47,13 @@ export function PortalShell({ profile, navItems, children }: PortalShellProps) {
           <div className="flex items-center gap-2">
             <Image
               src="/logo.png"
-              alt="CB Automates"
+              alt="CB Automations"
               width={41}
               height={28}
               className="h-7 w-auto"
             />
             <span className="text-sm font-semibold text-zinc-50">
-              CB Automates
+              CB Automations
             </span>
             {profile.role === "admin" && (
               <Badge className="bg-gold/15 text-gold hover:bg-gold/15">
