@@ -13,6 +13,7 @@ import {
   LifeBuoy,
   Receipt,
   Settings,
+  UserCircle,
   UserCog,
   Users,
   type LucideIcon,
@@ -32,6 +33,7 @@ const ICONS: Record<string, LucideIcon> = {
   notifications: Bell,
   support: LifeBuoy,
   settings: Settings,
+  account: UserCircle,
 };
 
 export interface NavItem {

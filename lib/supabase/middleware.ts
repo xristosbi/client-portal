@@ -1,7 +1,10 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/auth"];
+// /reset-password is public so a recovery link can land there before the
+// session cookie exists (the page itself still needs a valid recovery
+// session for the password update to succeed).
+const PUBLIC_PATHS = ["/login", "/auth", "/reset-password"];
 
 function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some(

@@ -44,6 +44,7 @@ export default async function PortalLayout({
       icon: "support",
       badge: unreadTickets ?? 0,
     },
+    { href: "/portal/account", label: "Ο Λογαριασμός μου", icon: "account" },
   ];
 
   return (

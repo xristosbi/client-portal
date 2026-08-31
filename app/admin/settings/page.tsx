@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ChangePasswordForm } from "@/components/shared/change-password-form";
 import { createClient } from "@/lib/supabase/server";
 import type { AppSettings } from "@/lib/types";
 import { SettingsForm } from "./settings-form";
@@ -47,6 +48,18 @@ export default async function AdminSettingsPage() {
         </CardHeader>
         <CardContent>
           <SettingsForm settings={settings} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Αλλαγή Κωδικού</CardTitle>
+          <CardDescription>
+            Ο κωδικός πρόσβασης του δικού σας λογαριασμού διαχειριστή.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChangePasswordForm idPrefix="admin" />
         </CardContent>
       </Card>
     </div>

@@ -9,7 +9,39 @@ Storage) · Stripe · Tailwind CSS + shadcn/ui · Resend · Vercel
 
 All user-facing UI text is in **Greek**.
 
-## Phase 11 (current)
+## Phase 13 (current)
+
+- Password management, no migration needed (Supabase Auth handles it):
+  - `/portal/account` ("Ο Λογαριασμός μου", linked at the bottom of the
+    client sidebar) and an "Αλλαγή Κωδικού" card on admin Ρυθμίσεις,
+    both using the shared `ChangePasswordForm` (min 8 chars, must match,
+    `supabase.auth.updateUser`)
+  - "Ξέχασα τον κωδικό μου" on /login → `resetPasswordForEmail` with a
+    generic confirmation that never reveals whether an account exists
+  - `/auth/callback` exchanges the PKCE code for a cookie session, then
+    forwards to `/reset-password`, which sets the new password and sends
+    the user to `/` (routed by role)
+  - `/reset-password` is in the middleware's public paths so a recovery
+    link can land before the session cookie exists
+- **Supabase dashboard setup required** — see "Password reset emails"
+  below
+
+## Password reset emails (Supabase config)
+
+Reset emails are sent by Supabase Auth, not by our Resend integration
+(`lib/email.ts` only sends the welcome email). Two things must be set in
+the Supabase dashboard:
+
+1. **Authentication → URL Configuration** — Site URL must be the
+   production URL, and `https://<domain>/auth/callback` must be in the
+   Redirect URLs allowlist, or the link in the email is rejected.
+2. **Project Settings → Authentication → SMTP Settings** — the built-in
+   sender is rate-limited (a few emails per hour) and explicitly not for
+   production. Point it at Resend: host `smtp.resend.com`, port `465`,
+   username `resend`, password = a Resend API key, sender address on the
+   verified domain.
+
+## Phase 11
 
 - `agreements` table (markdown text OR pdf per row, most recent row per
   client is "the" agreement) + private `agreements` storage bucket with
