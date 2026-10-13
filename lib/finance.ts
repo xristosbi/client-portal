@@ -91,8 +91,7 @@ export function nextBillingDate(billingDay: number, today: string): string {
   return formatYmd(nextMonthYear, nextMonth, nextMonthDay);
 }
 
-/** Sums (amount, entry_date) rows into totals per period. */
-export function computeRevenueTotals(
+/** Sums (amount, entry_date) rows into totals per period. */export function computeRevenueTotals(
   entries: { amount: number; entry_date: string }[]
 ): RevenueTotals {
   const today = athensToday();
@@ -111,4 +110,82 @@ export function computeRevenueTotals(
   }
 
   return totals;
+}
+
+// Hardcoded rather than Intl-derived so the axis labels stay short and
+// identical regardless of the runtime's ICU data.
+const GREEK_MONTHS_SHORT = [
+  "Ιαν",
+  "Φεβ",
+  "Μαρ",
+  "Απρ",
+  "Μάι",
+  "Ιουν",
+  "Ιουλ",
+  "Αυγ",
+  "Σεπ",
+  "Οκτ",
+  "Νοε",
+  "Δεκ",
+];
+
+const GREEK_MONTHS_LONG = [
+  "Ιανουάριος",
+  "Φεβρουάριος",
+  "Μάρτιος",
+  "Απρίλιος",
+  "Μάιος",
+  "Ιούνιος",
+  "Ιούλιος",
+  "Αύγουστος",
+  "Σεπτέμβριος",
+  "Οκτώβριος",
+  "Νοέμβριος",
+  "Δεκέμβριος",
+];
+
+export interface MonthlyRevenuePoint {
+  /** YYYY-MM */
+  month: string;
+  /** Short axis label, e.g. "Ιαν". */
+  label: string;
+  /** Tooltip label with the year, e.g. "Ιανουάριος 2026". */
+  fullLabel: string;
+  total: number;
+}
+
+/**
+ * Income totals per month for the trailing `months` window ending with the
+ * current (Athens-local) month. Months without entries are included with a
+ * zero total so the chart shows a continuous timeline.
+ */
+export function computeMonthlyRevenue(
+  entries: { amount: number; entry_date: string }[],
+  months = 12
+): MonthlyRevenuePoint[] {
+  const [year, month] = athensToday().split("-").map(Number);
+
+  const totalsByMonth = new Map<string, number>();
+  for (const entry of entries) {
+    const key = entry.entry_date.slice(0, 7);
+    totalsByMonth.set(key, (totalsByMonth.get(key) ?? 0) + Number(entry.amount));
+  }
+
+  const series: MonthlyRevenuePoint[] = [];
+  for (let offset = months - 1; offset >= 0; offset--) {
+    // A negative month index rolls the year back automatically.
+    const date = new Date(Date.UTC(year, month - 1 - offset, 1));
+    const pointYear = date.getUTCFullYear();
+    const pointMonth = date.getUTCMonth();
+    const key = `${pointYear}-${String(pointMonth + 1).padStart(2, "0")}`;
+
+    series.push({
+      month: key,
+      label: GREEK_MONTHS_SHORT[pointMonth],
+      fullLabel: `${GREEK_MONTHS_LONG[pointMonth]} ${pointYear}`,
+      total: Math.round((totalsByMonth.get(key) ?? 0) * 100) / 100,
+    });
+  }
+
+  return series;
 }

@@ -8,8 +8,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { RevenueCard } from "@/components/admin/revenue-card";
+import { RevenueChart } from "@/components/admin/revenue-chart";
 import { createClient } from "@/lib/supabase/server";
-import { computeRevenueTotals, currencyFormatter } from "@/lib/finance";
+import {
+  computeMonthlyRevenue,
+  computeRevenueTotals,
+  currencyFormatter,
+} from "@/lib/finance";
 
 export const metadata: Metadata = {
   title: "Επισκόπηση",
@@ -34,6 +39,9 @@ export default async function AdminDashboardPage() {
     ]);
 
   const revenueTotals = computeRevenueTotals(incomeEntries ?? []);
+  // Same rows the totals use — no extra query for the chart.
+  const monthlyRevenue = computeMonthlyRevenue(incomeEntries ?? []);
+  const hasChartData = monthlyRevenue.some((point) => point.total > 0);
 
   let mrrStripe = 0;
   let mrrCash = 0;
@@ -102,28 +110,32 @@ export default async function AdminDashboardPage() {
         <RevenueCard totals={revenueTotals} />
       </div>
 
-      {/* Chart placeholder */}
+      {/* Monthly revenue */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Πορεία Εσόδων</CardTitle>
           <CardDescription>
-            Μηνιαία εξέλιξη εσόδων — θα ενεργοποιηθεί μόλις υπάρχουν
-            αρκετές καταχωρήσεις.
+            Μηνιαία έσοδα των τελευταίων 12 μηνών, από τις καταχωρήσεις στη
+            σελίδα «Πληρωμές».
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-lg border border-dashed bg-muted/30">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-              <Euro className="h-6 w-6 text-muted-foreground" />
+          {hasChartData ? (
+            <RevenueChart data={monthlyRevenue} />
+          ) : (
+            <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-lg border border-dashed bg-muted/30">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <Euro className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <p className="text-sm font-medium">
+                Δεν υπάρχουν ακόμα δεδομένα εσόδων
+              </p>
+              <p className="max-w-sm text-center text-xs text-muted-foreground">
+                Μόλις καταχωρήσετε τα πρώτα έσοδα, εδώ θα εμφανίζεται το
+                γράφημα με την πορεία τους.
+              </p>
             </div>
-            <p className="text-sm font-medium">
-              Δεν υπάρχουν ακόμα δεδομένα εσόδων
-            </p>
-            <p className="max-w-sm text-center text-xs text-muted-foreground">
-              Μόλις καταγραφούν οι πρώτες πληρωμές, εδώ θα εμφανίζεται το
-              γράφημα με την πορεία των εσόδων σας.
-            </p>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
