@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const FROM_ADDRESS = "CB Automations <onboarding@imperialautomations.com>";
+const FROM_ADDRESS = "CB Automations <onboarding@cbautomations.gr>";
 
 const GOLD = "#d4a42c";
 const DARK = "#0c0a09";
