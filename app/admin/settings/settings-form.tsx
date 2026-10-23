@@ -70,7 +70,7 @@ export function SettingsForm({ settings }: { settings: AppSettings | null }) {
         <Input
           id="calendly_url"
           name="calendly_url"
-          placeholder="https://calendly.com/imperial-automations/consultation"
+          placeholder="https://calendly.com/cb-automations/consultation"
           defaultValue={settings?.calendly_url ?? undefined}
         />
         <p className="text-xs text-muted-foreground">

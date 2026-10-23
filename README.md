@@ -99,8 +99,7 @@ the Supabase dashboard:
   the metadata row after the bytes are confirmed uploaded
 - `/portal/files`: drag-and-drop or file-picker upload with a progress
   bar, optional note after upload, and a grid of the client's own files
-  plus anything the admin uploaded to them ("Εσείς" / "Imperial
-  Automations")
+  plus anything the admin uploaded to them ("Εσείς" / "CB Automations")
 - `/admin/clients/[id]` gains an "Αρχεία" section: same uploader (tagged
   `is_from_admin=true`) plus the full file grid for that client's project
 - Size limits: 100MB for video, 20MB for everything else, enforced
@@ -202,8 +201,8 @@ Requires `SUPABASE_SERVICE_ROLE_KEY` in the environment and the migration
 
 ## Phase 1
 
-- Next.js 14 scaffold with Tailwind + shadcn/ui (dark "imperial" theme with
-  gold accent)
+- Next.js 14 scaffold with Tailwind + shadcn/ui (dark theme with a gold
+  accent)
 - Supabase Auth (email + password, no self-signup)
 - `profiles` table with `admin` / `client` roles, RLS policies, and an auth
   trigger that creates a profile per new user

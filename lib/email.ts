@@ -2,6 +2,8 @@ import { Resend } from "resend";
 
 const FROM_ADDRESS = "CB Automations <onboarding@cbautomations.gr>";
 
+const CONTACT_EMAIL = "info@cbautomations.gr";
+
 const GOLD = "#d4a42c";
 const DARK = "#0c0a09";
 
@@ -23,9 +25,14 @@ function buildWelcomeEmailHtml({
   fullName,
   email,
   tempPassword,
+  siteUrl,
   loginUrl,
   logoUrl,
-}: WelcomeEmailParams & { loginUrl: string; logoUrl: string }): string {
+}: WelcomeEmailParams & {
+  siteUrl: string;
+  loginUrl: string;
+  logoUrl: string;
+}): string {
   const name = escapeHtml(fullName);
   const safeEmail = escapeHtml(email);
   const safePassword = escapeHtml(tempPassword);
@@ -92,7 +99,8 @@ function buildWelcomeEmailHtml({
               <p style="font-size:13px;line-height:1.6;color:#71717a;margin:0;">
                 Αν αντιμετωπίσετε οποιοδήποτε πρόβλημα με τη σύνδεση,
                 επικοινωνήστε μαζί μας μέσα από τη σελίδα «Υποστήριξη» της
-                πύλης ή απαντήστε σε αυτό το email.
+                πύλης ή στο
+                <a href="mailto:${CONTACT_EMAIL}" style="color:#b8860b;text-decoration:none;font-weight:bold;">${CONTACT_EMAIL}</a>.
               </p>
             </td>
           </tr>
@@ -100,7 +108,11 @@ function buildWelcomeEmailHtml({
           <tr>
             <td style="background-color:#fafafa;border-top:1px solid #e4e4e7;padding:20px 32px;text-align:center;">
               <div style="font-size:12px;color:#a1a1aa;">
-                © ${new Date().getFullYear()} CB Automations
+                © ${new Date().getFullYear()} CB Automations ·
+                <a href="mailto:${CONTACT_EMAIL}" style="color:#a1a1aa;text-decoration:none;">${CONTACT_EMAIL}</a>
+              </div>
+              <div style="font-size:12px;color:#a1a1aa;margin-top:4px;">
+                <a href="${siteUrl}" style="color:#a1a1aa;text-decoration:none;">${siteUrl.replace(/^https?:\/\//, "")}</a>
               </div>
             </td>
           </tr>
@@ -135,7 +147,7 @@ export async function sendWelcomeEmail(
     from: FROM_ADDRESS,
     to: params.email,
     subject: "Καλώς ήρθατε στην Πύλη Πελατών της CB Automations",
-    html: buildWelcomeEmailHtml({ ...params, loginUrl, logoUrl }),
+    html: buildWelcomeEmailHtml({ ...params, siteUrl, loginUrl, logoUrl }),
   });
 
   if (error) {

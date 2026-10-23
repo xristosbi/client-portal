@@ -48,7 +48,7 @@ export default function LoginPage() {
         <p className="mt-6 text-center text-xs text-zinc-500">
           Χρειάζεστε βοήθεια με τη σύνδεση;{" "}
           <a
-            href="mailto:support@imperialautomations.gr"
+            href="mailto:info@cbautomations.gr"
             className="text-gold hover:underline"
           >
             Επικοινωνήστε μαζί μας
